@@ -197,26 +197,6 @@ svg.scheme{display:block;width:100%;min-width:600px;height:auto;font-family:var(
 .rq{display:flex;align-items:center;gap:8px;font-size:14px}
 .rq input{width:64px;font-family:var(--f-mono)}
 
-.lxgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
-.fg{display:flex;flex-direction:column;gap:4px;min-width:0;margin-bottom:8px}
-.fg label{font-size:12px;color:var(--muted)}
-.fg input,.fg select{width:100%;max-width:none;font-family:var(--f-body)}
-.fg input[type=number]{font-family:var(--f-mono)}
-.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.lxnorm{margin:2px 0 10px;flex-wrap:wrap}
-.lxsum{position:static}
-.lxfx{margin-top:12px;font-family:var(--f-mono);font-size:12.5px;background:var(--olive-soft);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
-svg.lxplan{display:block;width:100%;max-width:560px;height:auto;min-width:300px;font-family:var(--f-body)}
-.lx-room{fill:var(--surface);stroke:var(--ink);stroke-width:3}
-.lx-glow{fill:var(--warn);fill-opacity:.13}
-.lx-lum{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
-.lx-x{stroke:var(--ink);stroke-width:1.3}
-.lx-d{font-size:13px;fill:var(--ink);font-family:var(--f-mono)}
-.lx-s{font-size:12px;fill:var(--muted)}
-.lxsteps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;max-width:80ch}
-@media (max-width:980px){.lxgrid{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){.fr3{grid-template-columns:1fr 1fr}}
 @media (max-width:980px){.room-body{grid-template-columns:minmax(0,1fr)}.sheet{position:static}.calc{grid-template-columns:minmax(0,1fr)}.sum{position:static}}
 @media (max-width:760px){
   .layout{grid-template-columns:minmax(0,1fr);gap:14px}
@@ -937,156 +917,6 @@ function exportOlsCsv(){const p=curP();const S0=buildScheme(p);const q=v=>'"'+St
   S0.G.forEach(g=>rows.push([g.code,g.name,g.res?'':`${g.ch}${g.a}`,g.rcd?`${g.rcd} мА`:'',g.cable,g.res?'':g.kw,g.res?'':g.I,g.ph].map(q).join(';')));
   dlSave(`Группы щита — ${p.name}.csv`,'﻿'+rows.join('\r\n'))}
 
-/* ---------------- LIGHTING CALCULATOR ---------------- */
-const LX_ROOMS=[
- {id:'living',n:'Гостиная, спальня',ru:150,en:200,des:'150–300',wp:0,k:'2700–3000 K',cri:'≥ 90',ugr:'—',note:'Общий свет 150 лк + торшер или бра для чтения 300–500 лк локально.'},
- {id:'kitchen',n:'Кухня',ru:150,en:300,des:'300–500 на столешнице',wp:0.85,k:'3000–4000 K',cri:'≥ 90',ugr:'—',note:'Норма РФ на полу; для рабочей зоны дизайнеры закладывают подсветку под шкафами 300–500 лк.'},
- {id:'kids',n:'Детская',ru:200,en:300,des:'300–500 на столе',wp:0,k:'3000 / 4000 K для уроков',cri:'≥ 90',ugr:'≤ 19',note:'Стол школьника — 300–500 лк от настольной лампы.'},
- {id:'office_home',n:'Домашний кабинет',ru:300,en:500,des:'500 на столе',wp:0.75,k:'4000 K',cri:'≥ 80',ugr:'≤ 19',note:'Свет на лицо спереди для видеозвонков.'},
- {id:'bath',n:'Ванная, санузел',ru:50,en:200,des:'200 у зеркала',wp:0,k:'3000–4000 K',cri:'≥ 90',ugr:'—',note:'У зеркала — 300–500 лк на лицо, без теней сверху.'},
- {id:'hall',n:'Прихожая, коридор',ru:50,en:100,des:'100–150',wp:0,k:'3000 K',cri:'≥ 80',ugr:'—',note:'У зеркала в прихожей — вертикальная подсветка.'},
- {id:'wardrobe',n:'Гардеробная',ru:75,en:200,des:'200–300',wp:0,k:'3000–4000 K',cri:'≥ 90',ugr:'—',note:'Высокий CRI — чтобы различать цвета одежды.'},
- {id:'office',n:'Офис, open space',ru:300,en:500,des:'500',wp:0.8,k:'4000 K',cri:'≥ 80',ugr:'≤ 19',note:'СП 52: 300 лк при работе с ПК; EN 12464-1: 500 лк для письма и чтения.'},
- {id:'meeting',n:'Переговорная',ru:300,en:500,des:'500, с диммером',wp:0.8,k:'3000–4000 K',cri:'≥ 80',ugr:'≤ 19',note:'Цилиндрическая освещённость лиц важна для видеосвязи.'},
- {id:'cafe',n:'Кафе, ресторан (зал)',ru:200,en:200,des:'100–300 по сценам',wp:0.8,k:'2700–3000 K',cri:'≥ 90',ugr:'≤ 22',note:'Сцены день / вечер; акцент на столы.'},
- {id:'shop',n:'Магазин, торговый зал',ru:300,en:300,des:'300–500 + акцент ×3–5',wp:0.8,k:'3000–4000 K',cri:'≥ 90',ugr:'≤ 22',note:'Акцентный свет на товар в 3–5 раз ярче общего.'},
- {id:'beauty',n:'Салон красоты, рабочее место',ru:500,en:500,des:'750 у кресла',wp:0.8,k:'4000 K',cri:'≥ 90',ugr:'≤ 19',note:'Высокий CRI обязателен для работы с цветом.'},
- {id:'class',n:'Учебный класс',ru:400,en:500,des:'500',wp:0.8,k:'4000 K',cri:'≥ 80',ugr:'≤ 19',note:'Доска — отдельная подсветка 500 лк.'},
- {id:'corr_pub',n:'Коридор общественный',ru:75,en:100,des:'100–150',wp:0,k:'3000–4000 K',cri:'≥ 80',ugr:'≤ 25',note:'Пути эвакуации — аварийный свет ≥ 1 лк.'}
-];
-const LX_LUM=[
- {id:'spot',n:'Точечный спот (даунлайт)',f:1.05,lm:450,w:6},
- {id:'panel',n:'LED-панель / встраиваемый',f:1.0,lm:3600,w:36},
- {id:'track',n:'Трековый светильник',f:1.0,lm:1800,w:20},
- {id:'surface',n:'Накладной потолочный',f:0.95,lm:2500,w:28},
- {id:'pendant',n:'Подвес, люстра (рассеянный)',f:0.82,lm:2000,w:22},
- {id:'line',n:'Линейный (профиль)',f:0.95,lm:1200,w:12},
- {id:'cove',n:'Подсветка в нише (отражённый)',f:0.5,lm:800,w:10}
-];
-const LX_SURF={c:[['Белый',0.8],['Светлый',0.7],['Средний',0.5],['Тёмный',0.3]],w:[['Светлые',0.5],['Средние',0.3],['Тёмные',0.1]],f:[['Светлый',0.3],['Средний',0.2],['Тёмный',0.1]]};
-/* Utilization factor for ceiling-mounted direct luminaires (CIE/BZ-type tables), reflectance sets ρc/ρw/ρf */
-const UF_I=[0.6,0.8,1.0,1.25,1.5,2.0,2.5,3.0,4.0,5.0];
-const UF_T={
- '0.8/0.5':[0.40,0.48,0.54,0.59,0.63,0.69,0.73,0.76,0.80,0.82],
- '0.7/0.5':[0.37,0.45,0.51,0.56,0.60,0.66,0.70,0.73,0.77,0.79],
- '0.7/0.3':[0.31,0.39,0.45,0.50,0.54,0.61,0.65,0.69,0.73,0.76],
- '0.5/0.3':[0.29,0.36,0.42,0.47,0.51,0.57,0.61,0.64,0.69,0.72],
- '0.5/0.1':[0.24,0.31,0.37,0.42,0.46,0.52,0.57,0.60,0.65,0.68],
- '0.3/0.1':[0.22,0.29,0.34,0.39,0.43,0.49,0.53,0.57,0.62,0.65]
-};
-function ufLookup(i,rc,rw,rf){
-  const keys=Object.keys(UF_T).map(k=>{const [c,w]=k.split('/').map(Number);return {k,c,w,d:Math.abs(c-rc)*1.2+Math.abs(w-rw)}}).sort((a,b)=>a.d-b.d);
-  const row=UF_T[keys[0].k];const ii=Math.max(UF_I[0],Math.min(UF_I.at(-1),i));
-  let j=UF_I.findIndex(x=>x>=ii);if(j<=0)j=1;const t=(ii-UF_I[j-1])/(UF_I[j]-UF_I[j-1]);
-  let u=row[j-1]+(row[j]-row[j-1])*t;
-  u*=1+(rf-0.2)*0.25; // floor reflectance correction (tables are for 0.2)
-  return u;
-}
-function lxDefault(){return {room:'living',norm:'ru',E:150,a:5,b:4,h:2.7,wp:0,hang:0,rc:0.7,rw:0.5,rf:0.2,lum:'spot',lm:450,w:6,mf:0.8,z:1}}
-function lxState(){const p=curP();p.lux=Object.assign(lxDefault(),p.lux||{});return p.lux}
-function lxCalc(s){
-  const S=s.a*s.b;const hp=Math.max(0.3,s.h-s.wp-s.hang);const i=S/(hp*(s.a+s.b));
-  const L=LX_LUM.find(x=>x.id===s.lum)||LX_LUM[0];
-  const uf=Math.min(0.95,ufLookup(i,s.rc,s.rw,s.rf)*L.f);
-  const Kz=1/s.mf;const Ftot=s.E*S*Kz*s.z/uf;const N=Math.max(1,Math.ceil(Ftot/s.lm));
-  // grid
-  let best=null;for(let r=1;r<=N;r++){const c=Math.ceil(N/r);const sx=s.a/c,sy=s.b/r;const sc=Math.abs(sx-sy)+(r*c-N)*0.3;if(!best||sc<best.sc)best={r,c,sc,sx,sy}}
-  const Nl=best.r*best.c;const Eact=Nl*s.lm*uf/(S*Kz*s.z);
-  const Pw=Nl*s.w;const pd=Pw/S;const smax=Math.max(best.sx,best.sy);const ratio=smax/hp;
-  return {S,hp,i,uf,Kz,Ftot,N,Nl,rows:best.r,cols:best.c,sx:best.sx,sy:best.sy,Eact,Pw,pd,eff:s.lm/s.w,ratio};
-}
-function lxPlan(s,R){
-  const W=520,pad=40;const sc=(W-2*pad)/Math.max(s.a,s.b);const w=s.a*sc,h=s.b*sc;const H=h+2*pad+20;
-  let g=`<defs><clipPath id="lxclip"><rect x="${pad}" y="${pad}" width="${w}" height="${h}"/></clipPath></defs><rect x="${pad}" y="${pad}" width="${w}" height="${h}" class="lx-room"/><g clip-path="url(#lxclip)">`;
-  // isolux-ish glow
-  for(let r=0;r<R.rows;r++)for(let c=0;c<R.cols;c++){const x=pad+(c+0.5)*R.sx*sc,y=pad+(r+0.5)*R.sy*sc;
-    g+=`<circle cx="${x}" cy="${y}" r="${Math.min(R.sx,R.sy)*sc*0.75}" class="lx-glow"/>`}
-  g+='</g>';
-  for(let r=0;r<R.rows;r++)for(let c=0;c<R.cols;c++){const x=pad+(c+0.5)*R.sx*sc,y=pad+(r+0.5)*R.sy*sc;
-    g+=`<circle cx="${x}" cy="${y}" r="7" class="lx-lum"/><path d="M${x-5} ${y-5}L${x+5} ${y+5}M${x+5} ${y-5}L${x-5} ${y+5}" class="lx-x"/>`}
-  // dims
-  g+=`<text x="${pad+w/2}" y="${pad-14}" text-anchor="middle" class="lx-d">${s.a.toFixed(2)} м</text><text x="${pad-14}" y="${pad+h/2}" text-anchor="middle" class="lx-d" transform="rotate(-90 ${pad-14} ${pad+h/2})">${s.b.toFixed(2)} м</text>`;
-  if(R.cols>1)g+=`<text x="${pad+R.sx*sc}" y="${pad+h+18}" text-anchor="middle" class="lx-s">шаг ${R.sx.toFixed(2)} м · от стены ${(R.sx/2).toFixed(2)} м</text>`;
-  else g+=`<text x="${pad+w/2}" y="${pad+h+18}" text-anchor="middle" class="lx-s">по центру · от стены ${(R.sx/2).toFixed(2)} м</text>`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="lxplan" role="img" aria-label="Раскладка светильников">${g}</svg>`;
-}
-function renderLux(){
-  const s=lxState();const R=lxCalc(s);const room=LX_ROOMS.find(r=>r.id===s.room)||LX_ROOMS[0];
-  const opt=(arr,val)=>arr.map(([t,v])=>`<option value="${v}"${Math.abs(v-val)<1e-6?' selected':''}>${t} ${Math.round(v*100)}%</option>`).join('');
-  const ok=R.Eact>=s.E*0.95;const over=R.Eact>s.E*1.4;
-  const st=ok?(over?['warn','С запасом — можно диммировать или убрать светильники']:['ok','Норма выполнена']):['crit','Не хватает света'];
-  const ratioWarn=R.ratio>1.5?`<p class="note" style="color:var(--warn)">Шаг между светильниками больше 1,5 высоты подвеса — между ними будут тёмные пятна. Добавьте светильников меньшей мощности.</p>`:'';
-  $('#main').innerHTML=`<div class="room-head"><h2>Калькулятор освещённости</h2><div class="lead"><p>Метод коэффициента использования светового потока — тот же, что в СП 52.13330 и в предварительном расчёте DIALux и Relux. Подходит для прямоугольных помещений с равномерной сеткой светильников; точность ±15%. Для сдачи проекта проверяйте результат в DIALux evo.</p></div></div>
-  <div class="lxgrid">
-   <div class="panel" style="margin-top:0"><h4>1. Помещение</h4>
-    <div class="fg"><label for="lx-room">Тип</label><select id="lx-room" data-lx="room">${LX_ROOMS.map(r=>`<option value="${r.id}"${r.id===s.room?' selected':''}>${r.n}</option>`).join('')}</select></div>
-    <div class="seg lxnorm" role="radiogroup" aria-label="Норма">${[['ru',`СП 52 · ${room.ru} лк`],['en',`EN 12464 · ${room.en} лк`],['own','Своя']].map(([k,t])=>`<button data-lxnorm="${k}" class="${s.norm===k?'on':''}" role="radio" aria-checked="${s.norm===k}">${t}</button>`).join('')}</div>
-    <div class="fr"><div class="fg"><label for="lx-E">Норма, лк</label><input type="number" id="lx-E" data-lx="E" value="${s.E}" min="10" max="2000" step="10"${s.norm!=='own'?' readonly':''}></div>
-    <div class="fg"><label for="lx-wp">Рабочая плоскость, м</label><input type="number" id="lx-wp" data-lx="wp" value="${s.wp}" min="0" max="1.2" step="0.05"></div></div>
-    <div class="fr3"><div class="fg"><label for="lx-a">Длина, м</label><input type="number" id="lx-a" data-lx="a" value="${s.a}" min="1" max="50" step="0.1"></div>
-    <div class="fg"><label for="lx-b">Ширина, м</label><input type="number" id="lx-b" data-lx="b" value="${s.b}" min="1" max="50" step="0.1"></div>
-    <div class="fg"><label for="lx-h">Высота, м</label><input type="number" id="lx-h" data-lx="h" value="${s.h}" min="2" max="10" step="0.05"></div></div>
-    <h4 style="margin-top:14px">2. Отделка</h4>
-    <div class="fr3"><div class="fg"><label for="lx-rc">Потолок</label><select id="lx-rc" data-lx="rc">${opt(LX_SURF.c,s.rc)}</select></div>
-    <div class="fg"><label for="lx-rw">Стены</label><select id="lx-rw" data-lx="rw">${opt(LX_SURF.w,s.rw)}</select></div>
-    <div class="fg"><label for="lx-rf">Пол</label><select id="lx-rf" data-lx="rf">${opt(LX_SURF.f,s.rf)}</select></div></div>
-    <h4 style="margin-top:14px">3. Светильник</h4>
-    <div class="fg"><label for="lx-lum">Тип</label><select id="lx-lum" data-lx="lum">${LX_LUM.map(l=>`<option value="${l.id}"${l.id===s.lum?' selected':''}>${l.n}</option>`).join('')}</select></div>
-    <div class="fr3"><div class="fg"><label for="lx-lm">Поток, лм</label><input type="number" id="lx-lm" data-lx="lm" value="${s.lm}" min="50" max="30000" step="50"></div>
-    <div class="fg"><label for="lx-w">Мощность, Вт</label><input type="number" id="lx-w" data-lx="w" value="${s.w}" min="1" max="500" step="1"></div>
-    <div class="fg"><label for="lx-hang">Свес, м</label><input type="number" id="lx-hang" data-lx="hang" value="${s.hang}" min="0" max="3" step="0.05"></div></div>
-    <h4 style="margin-top:14px">4. Условия</h4>
-    <div class="fr"><div class="fg"><label for="lx-mf">Эксплуатация</label><select id="lx-mf" data-lx="mf">${[['Чистое, Кз 1,25',0.8],['Обычное, Кз 1,4',0.7],['Пыльное, Кз 1,7',0.6]].map(([t,v])=>`<option value="${v}"${v===s.mf?' selected':''}>${t}</option>`).join('')}</select></div>
-    <div class="fg"><label for="lx-z">Неравномерность Z</label><select id="lx-z" data-lx="z">${[['1,0 — EN',1],['1,1 — РФ, LED',1.1],['1,15 — РФ, лампы',1.15]].map(([t,v])=>`<option value="${v}"${v===s.z?' selected':''}>${t}</option>`).join('')}</select></div></div>
-   </div>
-   <div>
-    <div class="sum lxsum"><div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Нужно светильников</div>
-     <div class="big">${R.Nl} <small>шт · ${R.rows} × ${R.cols}</small></div>
-     <div class="meter"><i style="width:${Math.min(R.Eact/s.E,1.5)/1.5*100}%;background:var(--${st[0]==='crit'?'crit':st[0]==='warn'?'warn':'ok'})"></i></div>
-     <div style="font-weight:500;color:var(--${st[0]})">${st[1]}: ${Math.round(R.Eact)} лк при норме ${s.E} лк</div>
-     <div style="margin-top:12px">
-      <div class="kv"><span>Площадь</span><span>${R.S.toFixed(1)} м²</span></div>
-      <div class="kv"><span>Расчётная высота h</span><span>${R.hp.toFixed(2)} м</span></div>
-      <div class="kv"><span>Индекс помещения i</span><span>${R.i.toFixed(2)}</span></div>
-      <div class="kv"><span>Коэфф. использования η</span><span>${R.uf.toFixed(2)}</span></div>
-      <div class="kv"><span>Нужный поток Φ</span><span>${Math.round(R.Ftot).toLocaleString('ru-RU')} лм</span></div>
-      <div class="kv"><span>Мощность</span><span>${R.Pw} Вт · ${R.pd.toFixed(1)} Вт/м²</span></div>
-      <div class="kv"><span>Светоотдача</span><span>${Math.round(R.eff)} лм/Вт</span></div>
-     </div>
-     <div class="lxfx">Φ = E · S · Kз · Z / η = ${s.E} · ${R.S.toFixed(1)} · ${R.Kz.toFixed(2)} · ${s.z} / ${R.uf.toFixed(2)}</div>
-    </div>
-    <div class="panel"><h4>Раскладка светильников</h4><div class="tbl">${lxPlan(s,R)}</div>${ratioWarn}</div>
-    <div class="panel"><h4>Рекомендации · ${room.n}</h4>
-     <div class="kv"><span>СП 52 / СанПиН (РФ)</span><span>${room.ru} лк</span></div>
-     <div class="kv"><span>EN 12464-1 / зарубежная практика</span><span>${room.en} лк</span></div>
-     <div class="kv"><span>Практика дизайнеров</span><span>${room.des} лк</span></div>
-     <div class="kv"><span>Цветовая температура</span><span>${room.k}</span></div>
-     <div class="kv"><span>Цветопередача Ra (CRI)</span><span>${room.cri}</span></div>
-     <div class="kv"><span>Ослеплённость UGR</span><span>${room.ugr}</span></div>
-     <p class="note">${room.note}</p></div>
-   </div>
-  </div>
-  <div class="panel"><h4>Как считает калькулятор</h4>
-   <ol class="lxsteps"><li><b>Индекс помещения</b> i = a·b / (h·(a+b)), где h — высота от рабочей плоскости до светильника.</li>
-   <li><b>Коэффициент использования η</b> — доля потока, дошедшая до рабочей плоскости. Берётся по таблицам для потолочных светильников прямого света по i и отражениям потолка, стен и пола, с поправкой на тип светильника.</li>
-   <li><b>Коэффициент запаса Kз = 1 / MF</b> — учитывает старение светодиодов и загрязнение (в EN это maintenance factor).</li>
-   <li><b>Z</b> — отношение средней освещённости к минимальной; в российской методике 1,1–1,15, в EN — 1 (нормируется средняя).</li>
-   <li><b>Количество</b> N = Φ / Φ₁, раскладка — сетка с шагом, близким к квадрату, и отступом от стен в половину шага.</li></ol>
-   <p class="note">Не учитываются: дневной свет, мебель и перегородки, светильники с узкой кривой силы света (акцентные споты 24–36°), сложная форма помещения. Для таких задач — DIALux evo или Relux.</p></div>
-  <div class="panel"><h4>Аналоги</h4><div class="tbl"><table><thead><tr><th>Программа</th><th>Что делает</th><th>Когда нужна</th></tr></thead><tbody>
-   <tr><td><b>DIALux evo</b></td><td>3D-расчёт по фотометрии IES/LDT из каталогов производителей, визуализация, отчёты по EN 12464</td><td>Сдача проекта, общественные помещения, сложная форма</td></tr>
-   <tr><td><b>Relux</b></td><td>Аналог DIALux: 3D-расчёт, базы светильников, дневной свет</td><td>То же, удобнее для некоторых каталогов</td></tr>
-   <tr><td><b>AGi32</b></td><td>Профессиональный точный расчёт (платный)</td><td>Сложные проекты, наружное освещение</td></tr>
-   <tr><td><b>Онлайн-калькуляторы</b></td><td>Обычно Φ = E·S·Kз без коэффициента использования</td><td>Очень грубая прикидка — завышают или занижают в 1,5–2 раза</td></tr>
-   <tr><td><b>Этот калькулятор</b></td><td>Метод коэффициента использования, нормы РФ и EN, раскладка, плотность мощности</td><td>Быстрый подбор на стадии концепции и расстановки</td></tr></tbody></table></div></div>${toolsHTML()}`;
-}
-function lxSet(k,v){const s=lxState();
-  if(k==='room'){s.room=v;const r=LX_ROOMS.find(x=>x.id===v);s.wp=r.wp;if(s.norm!=='own')s.E=s.norm==='en'?r.en:r.ru}
-  else if(k==='lum'){s.lum=v;const L=LX_LUM.find(x=>x.id===v);s.lm=L.lm;s.w=L.w}
-  else s[k]=+v;
-  queueSave();
-}
-
 /* ---------------- RENDER ---------------- */
 function renderRail(){
   const groups={};ROOMS.forEach(r=>(groups[r.grp]=groups[r.grp]||[]).push(r));
@@ -1095,7 +925,7 @@ function renderRail(){
     h+=`<h3>${esc(g)}</h3>`;
     for(const r of rs){const st=roomStats(r);h+=`<a href="#${r.id}" class="${S.view===r.id?'on':''}"><span>${esc(r.name)}</span><span class="cnt">${st.d}/${st.n}</span><span class="bar"><i style="width:${st.n?st.d/st.n*100:0}%"></i></span></a>`}
   }
-  h+=`<h3>Инструменты</h3><a href="#heights" class="${S.view==='heights'?'on':''}"><span>Шкала высот</span><span class="cnt"></span></a><a href="#lux" class="${S.view==='lux'?'on':''}"><span>Освещённость</span><span class="cnt">расчёт</span></a><a href="#load" class="${S.view==='load'?'on':''}"><span>Нагрузка</span><span class="cnt"></span></a><h3>Итог</h3><a href="#scheme" class="${S.view==='scheme'?'on':''}"><span>Однолинейная схема</span><span class="cnt">бонус</span></a>`;
+  h+=`<h3>Инструменты</h3><a href="#heights" class="${S.view==='heights'?'on':''}"><span>Шкала высот</span><span class="cnt"></span></a><a href="#load" class="${S.view==='load'?'on':''}"><span>Нагрузка</span><span class="cnt"></span></a><h3>Итог</h3><a href="#scheme" class="${S.view==='scheme'?'on':''}"><span>Однолинейная схема</span><span class="cnt">бонус</span></a>`;
   $('#rail').innerHTML=h;
 }
 function renderTotal(){
@@ -1211,12 +1041,12 @@ function updSum(){
 function renderAll(){
   renderProj();renderTotal();renderRail();
   $('#lvSwitch').innerHTML=levelSwitch();
-  if(S.view==='start')renderStart();else if(S.view==='scheme')renderScheme();else if(S.view==='lux')renderLux();else if(S.view==='heights')renderHeights();else if(S.view==='load')renderLoad();
+  if(S.view==='start')renderStart();else if(S.view==='scheme')renderScheme();else if(S.view==='heights')renderHeights();else if(S.view==='load')renderLoad();
   else{const r=ROOMS.find(x=>x.id===S.view)||ROOMS[0];renderRoom(r)}
 }
 
 /* ---------------- EVENTS ---------------- */
-function route(){const h=(location.hash||'').slice(1);S.view=(ROOMS.some(r=>r.id===h)||h==='heights'||h==='load'||h==='start'||h==='scheme'||h==='lux')?h:'start';renderAll();}
+function route(){const h=(location.hash||'').slice(1);S.view=(ROOMS.some(r=>r.id===h)||h==='heights'||h==='load'||h==='start'||h==='scheme')?h:'start';renderAll();}
 window.addEventListener('hashchange',()=>{route();window.scrollTo({top:0})});
 
 function setHL(id,on){document.querySelectorAll(`[data-item="${CSS.escape(id)}"]`).forEach(el=>el.classList.toggle('hl',on))}
@@ -1226,7 +1056,7 @@ document.addEventListener('focusin',e=>{const t=e.target.closest('.sym');if(t)se
 document.addEventListener('focusout',e=>{const t=e.target.closest('.sym');if(t)setHL(t.dataset.item,false)});
 
 function toggle(id){const p=curP();if(p.checks[id])delete p.checks[id];else p.checks[id]=true;queueSave();
-  const y=window.scrollY;renderRail();renderTotal();if(S.view!=='heights'&&S.view!=='load'&&S.view!=='start'&&S.view!=='scheme'&&S.view!=='lux'){renderRoom(ROOMS.find(r=>r.id===S.view));}window.scrollTo({top:y});
+  const y=window.scrollY;renderRail();renderTotal();if(S.view!=='heights'&&S.view!=='load'&&S.view!=='start'&&S.view!=='scheme'){renderRoom(ROOMS.find(r=>r.id===S.view));}window.scrollTo({top:y});
   const li=document.querySelector(`li.it[data-item="${CSS.escape(id)}"] .cb`);if(li)li.focus({preventScroll:true});}
 function jump(id){const li=document.querySelector(`li.it[data-item="${CSS.escape(id)}"]`);if(!li){S.filter='all';renderRoom(ROOMS.find(r=>r.id===S.view));return jump(id)}
   li.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});li.classList.remove('flash');void li.offsetWidth;li.classList.add('flash')}
@@ -1243,7 +1073,6 @@ document.addEventListener('click',async e=>{
   if(id==='delBtn'){S.delMode=true;renderProj();return}
   if(id==='delNo'){S.delMode=false;renderProj();return}
   if(id==='delOk'){const p=curP();S.projects=S.projects.filter(x=>x.id!==p.id);S.cur=S.projects[0].id;S.delMode=false;try{await store.remove(p.id)}catch(err){}renderAll();return}
-  const ln=e.target.closest('[data-lxnorm]');if(ln){const st=lxState();st.norm=ln.dataset.lxnorm;const r=LX_ROOMS.find(x=>x.id===st.room);if(st.norm!=='own')st.E=st.norm==='en'?r.en:r.ru;queueSave();const y=window.scrollY;renderLux();window.scrollTo({top:y});return}
   if(id==='svgBtn')return exportSvg();
   if(id==='olsCsv')return exportOlsCsv();
   if(id==='copyOpen')return copyOpen();
@@ -1256,13 +1085,11 @@ document.addEventListener('keydown',e=>{
   const sym=e.target.closest&&e.target.closest('.sym');if(sym&&(e.key==='Enter'||e.key===' ')){e.preventDefault();jump(sym.dataset.item)}
 });
 document.addEventListener('change',e=>{
-  const lk=e.target.dataset&&e.target.dataset.lx;if(lk&&e.target.tagName==='SELECT'){lxSet(lk,e.target.value);const y=window.scrollY;renderLux();window.scrollTo({top:y});return}
   if(e.target.id==='projSel'){if(e.target.value==='__new'){S.newMode=true;renderProj();return}S.cur=e.target.value;S.newMode=S.delMode=false;renderAll();}
 });
 document.addEventListener('input',e=>{
   const q=e.target.dataset&&e.target.dataset.q;const p=curP();
   if(q){p.calc[q]=Math.max(0,Math.min(20,+e.target.value||0));updSumSoft();queueSave();}
-  const lxk=e.target.dataset&&e.target.dataset.lx;if(lxk&&e.target.tagName==='INPUT'){if(e.target.value===''||isNaN(+e.target.value))return;lxSet(lxk,e.target.value);clearTimeout(S.lxT);S.lxT=setTimeout(()=>{const y=window.scrollY;const f=document.activeElement&&document.activeElement.id;const pos=document.activeElement&&document.activeElement.selectionStart;renderLux();window.scrollTo({top:y});if(f){const el=document.getElementById(f);if(el){el.focus()}}},400);return}
   const rm=e.target.dataset&&e.target.dataset.rm;if(rm){const R=schemeRooms(p);R[rm]=Math.max(0,Math.min(+e.target.max||4,+e.target.value||0));queueSave();clearTimeout(S.rmT);S.rmT=setTimeout(()=>{const y=window.scrollY;const f=document.activeElement&&document.activeElement.id;renderScheme();window.scrollTo({top:y});if(f){const el=document.getElementById(f);el&&el.focus()}},350);}
   if(e.target.id==='lim'){p.limit=+e.target.value||10;updSumSoft(true);queueSave();}
 });

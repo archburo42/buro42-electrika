@@ -1,0 +1,1120 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Чек-лист электрики büro42</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+
+/* Layout: drafting-table app — rail of rooms on the left, a wall elevation (развёртка) beside its checklist, all on a faint drafting grid */
+:root{
+  --bg:#ECEEE6; --surface:#FBFBF7; --ink:#23251A; --muted:#66695A; --line:#D3D6C8; --grid:rgba(78,78,48,.07);
+  --olive:#4E4E30; --olive-ink:#FBFBF7; --olive-soft:#E1E3D1; --coral:#D9534F; --coral-soft:#F9DEDA;
+  --ok:#3F7D4E; --warn:#C98A1C; --crit:#C2453F;
+  --f-display:"Jost","Futura","Century Gothic",sans-serif;
+  --f-body:"Golos Text","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15160F; --surface:#1E2016; --ink:#E8E9DE; --muted:#A3A693; --line:#363929; --grid:rgba(200,202,160,.06);
+  --olive:#B8BA86; --olive-ink:#17180F; --olive-soft:#2B2D1F; --coral:#FF8A85; --coral-soft:#3A2220;
+  --ok:#7FC08E; --warn:#E3B055; --crit:#FF8A85; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15160F; --surface:#1E2016; --ink:#E8E9DE; --muted:#A3A693; --line:#363929; --grid:rgba(200,202,160,.06);
+  --olive:#B8BA86; --olive-ink:#17180F; --olive-soft:#2B2D1F; --coral:#FF8A85; --coral-soft:#3A2220;
+  --ok:#7FC08E; --warn:#E3B055; --crit:#FF8A85; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding-block:20px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:14px;min-width:0}
+.logo{font-family:var(--f-display);font-weight:300;font-size:28px;letter-spacing:.01em;line-height:1}
+.logo b{font-weight:400;color:var(--coral)}
+.brand h1{font-family:var(--f-display);font-weight:500;font-size:20px;margin:0;text-wrap:balance}
+.proj{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+.proj label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select,input[type=text],input[type=number]{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0}
+select{max-width:240px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--olive)}
+.btn.primary{background:var(--olive);color:var(--olive-ink);border-color:var(--olive)}
+.btn.danger{color:var(--crit)}
+.btn.small{padding:3px 9px;font-size:13px}
+.total{display:flex;align-items:center;gap:10px}
+.total svg{display:block}
+.total .num{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.store-note{font-size:12px;color:var(--muted);width:100%;text-align:right}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;padding-top:20px}
+nav.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start;display:flex;flex-direction:column;gap:2px}
+.rail h3{font-family:var(--f-display);font-weight:500;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 10px 4px}
+.rail h3:first-child{margin-top:0}
+.rail a{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 8px;padding:7px 10px;border-radius:6px;color:inherit;text-decoration:none}
+.rail a:hover{background:var(--olive-soft)}
+.rail a.on{background:var(--olive);color:var(--olive-ink)}
+.rail a .cnt{font-family:var(--f-mono);font-size:12px;opacity:.75}
+.rail a .bar{grid-column:1/-1;height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+.rail a .bar i{display:block;height:100%;background:var(--coral)}
+.rail a.on .bar{background:rgba(255,255,255,.25)}
+main{min-width:0}
+.room-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 20px;margin-bottom:14px}
+.room-head h2{font-family:var(--f-display);font-weight:400;font-size:34px;line-height:1.1;margin:0;text-wrap:balance}
+.room-head .lead{flex-basis:100%;display:flex;flex-direction:column;gap:6px}
+.room-head .lead p{margin:0;color:var(--muted);max-width:62ch}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.room-body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
+.room-body.nodraw{grid-template-columns:minmax(0,1fr)}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 14px 10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.sheet .cap{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}
+.sheet .cap b{font-family:var(--f-display);font-weight:500;font-size:13px;color:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.drawing{background-color:var(--surface);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:18px 18px;border-radius:6px;overflow-x:auto}
+.drawing svg{display:block;width:100%;height:auto;min-width:420px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sym{cursor:pointer}
+.sym .hit{fill:transparent}
+.sym.hl .ring{stroke:var(--coral);stroke-width:2.5;fill:var(--coral-soft)}
+.sym.done .mark{opacity:.45}
+.elhl{stroke:var(--coral)!important}
+ul.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.grp{font-family:var(--f-display);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 2px 2px}
+.grp:first-child{margin-top:0}
+li.it{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 10px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;transition:border-color .15s,background .15s}
+li.it.hl{border-color:var(--coral);box-shadow:0 0 0 1px var(--coral)}
+li.it.flash{animation:fl 1.2s ease}
+@keyframes fl{0%{background:var(--coral-soft)}100%{background:var(--surface)}}
+@media (prefers-reduced-motion:reduce){li.it.flash{animation:none}}
+li.it.done{background:transparent}
+li.it.done .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.cb{width:22px;height:22px;border:1.5px solid var(--olive);border-radius:5px;display:grid;place-items:center;cursor:pointer;background:transparent;padding:0;margin-top:1px}
+.cb svg{opacity:0}
+li.done .cb{background:var(--olive)}
+li.done .cb svg{opacity:1}
+.txt{min-width:0}
+.meta{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.tag{font-size:11.5px;border-radius:4px;padding:1px 6px;background:var(--olive-soft);color:var(--ink);white-space:nowrap}
+.tag.h{font-family:var(--f-mono);background:transparent;border:1px solid var(--line)}
+.tag.must{background:var(--coral-soft);color:var(--coral);font-weight:600}
+.tag.src{background:transparent;color:var(--muted);padding-left:0}
+.kd{display:inline-block;width:14px;height:14px;vertical-align:-2px}
+.empty{padding:20px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);text-align:center}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:18px}
+.panel h4{font-family:var(--f-display);font-weight:500;font-size:16px;margin:0 0 8px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);align-items:center}
+.tools .msg{font-size:13px;color:var(--muted)}
+/* heights */
+.ruler-wrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;overflow-x:auto}
+.ruler-wrap svg{display:block;width:100%;min-width:560px;height:auto}
+/* load */
+.calc{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+.app-row{display:grid;grid-template-columns:auto minmax(0,1fr) 70px 70px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.app-row input[type=number]{width:70px;padding:4px 6px;font-family:var(--f-mono);font-size:13px}
+.app-row .pw{font-family:var(--f-mono);font-size:13px;text-align:right;color:var(--muted)}
+.app-row .nm small{display:block;color:var(--muted);font-size:12px}
+.sum{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.big{font-family:var(--f-display);font-weight:300;font-size:46px;line-height:1}
+.big small{font-size:18px;color:var(--muted)}
+.meter{height:12px;border-radius:6px;background:var(--olive-soft);overflow:hidden;margin:12px 0 6px;position:relative}
+.meter i{display:block;height:100%;border-radius:6px}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.kv span:last-child{font-family:var(--f-mono)}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:13px}
+
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 20px}
+.lvcard{display:flex;flex-direction:column;gap:6px;text-align:left;line-height:1.45;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.lvcard:hover{border-color:var(--olive)}
+.lvcard.on{border-color:var(--olive);box-shadow:0 0 0 2px var(--olive)}
+.lvdots{display:flex;gap:4px}.lvdots i{width:18px;height:6px;border-radius:3px;background:var(--line)}.lvdots i.f{background:var(--coral)}
+.lvt{font-family:var(--f-display);font-size:22px;font-weight:500;line-height:1.1}
+.lvs{font-size:13px;color:var(--olive);font-weight:600}
+.lvd{font-size:14px;color:var(--muted);margin-bottom:4px}
+.lvk{display:flex;justify-content:space-between;gap:10px;font-size:13px;border-top:1px dashed var(--line);padding-top:5px}
+.lvk span{color:var(--muted)}.lvk b{font-weight:500;text-align:right}
+.lvn{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:4px}
+.lvcard.on .lvn{color:var(--coral)}
+.info{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--olive);background:transparent;color:var(--olive);font-family:var(--f-display);font-style:italic;font-weight:600;font-size:12px;line-height:1;cursor:pointer;padding:0;vertical-align:1px;margin-left:4px}
+.info:hover,.info.on{background:var(--olive);color:var(--olive-ink)}
+.expl{grid-column:2;background:var(--olive-soft);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.55;max-width:70ch}
+svg.scheme{display:block;width:100%;min-width:600px;height:auto;font-family:var(--f-body)}
+.scheme .nd{fill:var(--surface);stroke:var(--muted);stroke-width:1.2}
+.scheme .nd.acc{fill:var(--olive-soft);stroke:var(--olive);stroke-width:1.6}
+.scheme .nd.acc2{fill:var(--coral-soft);stroke:var(--coral)}
+.scheme .nd.in{fill:var(--surface);stroke:var(--olive)}
+.scheme .nd.warn{fill:var(--surface);stroke:var(--warn)}
+.scheme .nt{font-size:14px;font-weight:600;fill:var(--ink)}
+.scheme .ns{font-size:12px;fill:var(--muted)}
+.scheme .ln-pow{stroke:var(--olive);stroke-width:3;fill:none}
+.scheme .ln-low{stroke:var(--ink);stroke-width:1.5;fill:none}
+.scheme .ln-net{stroke:var(--coral);stroke-width:2;fill:none;stroke-dasharray:7 4}
+.scheme .ln-radio{stroke:var(--muted);stroke-width:1.4;fill:none;stroke-dasharray:2 4}
+.scheme .ln-bus{stroke:var(--ok);stroke-width:3.5;fill:none}
+.plan .room{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.plan .rn{font-family:var(--f-display);font-size:14px;fill:var(--muted)}
+.plan .it{font-size:9.5px;font-weight:600;stroke:none;fill:var(--ink)}
+.plan g[class^="i-"]{stroke-width:1.8;fill:var(--surface)}
+.plan .i-net{stroke:var(--coral)}.plan .i-net circle{fill:var(--coral)}
+.plan .i-acc{stroke:var(--olive);fill:var(--olive-soft)}
+.plan .i-warn{stroke:var(--warn)}.plan .i-warn path{fill:var(--warn);fill-opacity:.25}
+.plan .i-crit{stroke:var(--crit)}
+.plan .i-ink{stroke:var(--ink)}
+@media (max-width:900px){.levels{grid-template-columns:minmax(0,1fr)}}
+
+.lvwrap{display:flex;align-items:center;gap:8px}
+.lvlab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:14px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--olive);color:var(--olive-ink)}
+.start{max-width:1100px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);margin:4px 0 6px}
+.start h2{font-family:var(--f-display);font-weight:400;font-size:40px;line-height:1.1;margin:0 0 10px;text-wrap:balance}
+.startlead{color:var(--muted);max-width:62ch;margin:0 0 22px}
+.levels.big .lvcard{padding:20px}
+.levels.big .lvt{font-size:28px}
+.lvinc{margin:4px 0 8px;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.lvinc li::marker{color:var(--coral)}
+.startgo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:6px}
+.startgo .btn{text-decoration:none;padding:10px 18px}
+.startgo .msg{font-size:14px;color:var(--muted)}
+
+.olsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}
+.olsum div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.olsum span{font-size:12px;color:var(--muted)}.olsum b{font-family:var(--f-display);font-weight:500;font-size:18px}
+.olswrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#fff;padding:6px}
+.olswrap svg{display:block}
+.rqs{display:flex;flex-wrap:wrap;gap:10px 18px}
+.rq{display:flex;align-items:center;gap:8px;font-size:14px}
+.rq input{width:64px;font-family:var(--f-mono)}
+@media (max-width:980px){.room-body{grid-template-columns:minmax(0,1fr)}.sheet{position:static}.calc{grid-template-columns:minmax(0,1fr)}.sum{position:static}}
+@media (max-width:760px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:14px}
+  nav.rail{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px}
+  .rail h3{display:none}
+  .rail a{flex:0 0 auto;grid-template-columns:auto auto;border:1px solid var(--line)}
+  .rail a .bar{display:none}
+  .proj{margin-left:0;width:100%}
+  .room-head h2{font-size:28px}
+  .store-note{text-align:left}
+  .app-row{grid-template-columns:auto minmax(0,1fr) 64px}
+  .app-row .pw{display:none}
+}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="logo">būro<b>42</b></span><h1>Чек-лист электрики</h1></div>
+    <div class="lvwrap"><span class="lvlab">Уровень</span><span id="lvSwitch"></span></div>
+    <div class="proj">
+      <label for="projSel">Проект</label>
+      <select id="projSel"></select>
+      <span id="projActions"></span>
+      <div class="total" title="Выполнено по проекту"><svg width="34" height="34" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="4"/><circle id="ring" cx="18" cy="18" r="15" fill="none" stroke="var(--coral)" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)" pathLength="100"/></svg><span class="num" id="totalNum">0/0</span></div>
+    </div>
+    <div class="store-note" id="storeNote">Отметки сохраняются в этом браузере</div>
+  </header>
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Помещения"></nav>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const SRC={ru:'норма РФ',intl:'зарубежный опыт',buro:'практика büro42'};
+const KIND={s:'розетка 220 В',n:'интернет / слаботочка',o:'вывод кабеля',w:'выключатель',p:'силовая линия',l:'свет',x:'проверка'};
+
+const ROOMS=[
+{id:'general',grp:'Квартира',name:'Общие правила',lead:'Проверяют один раз на весь объект, до детализации по комнатам. Электрику расставляют только после утверждённой мебели и спецификации техники.',items:[
+ {g:'Щит и группы',t:'Место электрощита и слаботочного щита указано на плане, доступ не загорожен мебелью, резерв 20–30% модулей',k:'o',m:1,s:'buro'},
+ {t:'Разрешённая мощность квартиры известна и сверена с расчётом нагрузки (вкладка «Нагрузка»)',k:'x',m:1,s:'buro'},
+ {t:'Освещение и розетки — разные группы',k:'x',m:1,s:'ru'},
+ {t:'Отдельные линии на мощные приборы: варочная, духовой шкаф, ПММ, стиральная, сушильная, бойлер, кондиционер, тёплый пол',k:'p',m:1,s:'ru'},
+ {t:'УЗО или АВДТ 30 мА на все розеточные группы',k:'x',m:1,s:'ru'},
+ {t:'Реле напряжения (УЗИП) на вводе — защита техники от скачков',k:'x',m:0,s:'buro'},
+ {g:'Кабель (медь, итог считает электрик)',t:'Освещение — 1,5 мм² на автомат 10 А',k:'x',m:1,s:'ru'},
+ {t:'Розетки — 2,5 мм² на автомат 16 А',k:'x',m:1,s:'ru'},
+ {t:'Варочная панель (1 фаза) — 6 мм² на автомат 32 А',k:'p',m:1,s:'ru'},
+ {g:'Расстановка',t:'План розеток наложен на план мебели: ничего не попадает за шкафы, диваны, изголовья',k:'x',m:1,s:'buro'},
+ {t:'Свободные стены: любая точка не дальше 1,8 м от розетки (правило NEC — удобная проверка)',k:'s',m:0,s:'intl'},
+ {t:'Отступ от угла 15–35 см, от откоса двери 10–15 см',k:'x',m:0,s:'intl'},
+ {t:'Розетки в блоке выровнены по одной оси; ритм совпадает с раскладкой плитки и панелей',k:'x',m:0,s:'buro'},
+ {t:'Выключатели со стороны ручки двери на 80–100 см',k:'w',h:90,m:1,s:'buro'},
+ {t:'Для пожилых свободные розетки на 40–45 см, выключатели не выше 1,2 м (Approved Document M)',k:'s',h:45,m:0,s:'intl'},
+ {t:'Высоты заданы от чистового пола: толщина стяжки и покрытия учтена',k:'x',m:1,s:'buro'},
+ {g:'Слаботочка и резерв',t:'Интернет кабелем (RJ45) к ТВ, компьютеру и точкам Wi-Fi; роутер ближе к центру квартиры',k:'n',m:1,s:'buro'},
+ {t:'Пустая гофра от слаботочного щита в каждую комнату',k:'o',m:0,s:'buro'},
+ {t:'«Ноль» в подрозетниках выключателей и глубокие подрозетники — под умные выключатели',k:'w',m:0,s:'buro'},
+ {t:'Автономные дымовые извещатели в коридоре и жилых комнатах не закрыты декором и потолочными конструкциями',k:'x',m:0,s:'ru'},
+ {t:'Кнопка «выключить всё» у входа — подробнее в разделе «Умный дом»',k:'w',m:0,s:'intl'}
+]},
+{id:'hall',grp:'Квартира',name:'Прихожая',lead:'Технический узел квартиры: щиты, роутер, домофон, база робота-пылесоса и зарядки.',
+ wall:{w:440,h:250,title:'Стена со шкафом и входной дверью',els:[
+  {t:'box',x:0,y:0,w:200,h:240,label:'Шкаф',ly:225},
+  {t:'vl',x:70,y1:0,y2:240},{t:'vl',x:140,y1:0,y2:240},{t:'hl',x1:72,x2:138,y:120},
+  {t:'box',x:4,y:150,w:62,h:55,label:'Электрощит',acc:1,fs:.8},
+  {t:'box',x:4,y:95,w:62,h:40,label:'Слаботочка',fs:.8},
+  {t:'box',x:145,y:0,w:50,h:15},
+  {t:'box',x:240,y:0,w:90,h:210,label:'Входная дверь'},
+  {t:'box',x:385,y:0,w:55,h:45,label:'Пуф',fs:.85},
+  {t:'led',x1:205,x2:235,y:3,item:'hall-11'}]},
+ items:[
+ {t:'Электрощит и слаботочный щит: дверца шкафа открывается полностью, перед щитом нет полок',k:'o',m:1,s:'buro'},
+ {t:'Роутер в шкафу: 2 розетки 220 В + интернет над полкой; дверца не металлическая, есть вентиляция',k:'s',h:130,q:3,m:1,s:'buro',p:[[85,130],[100,130],[117,130,'n']]},
+ {t:'База робота-пылесоса: розетка на 20 см, ниша высотой от 15 см под модель',k:'s',h:20,m:1,s:'buro',p:[[185,22]]},
+ {t:'Ручной пылесос: розетка на высоте зарядной станции, обычно 100–120 см',k:'s',h:110,m:0,s:'buro',p:[[170,110]]},
+ {t:'Розетка для утюга и отпаривателя',k:'s',h:90,m:0,s:'buro',p:[[105,85]]},
+ {t:'Выключатель у входа со стороны ручки, 90 см',k:'w',h:90,m:1,s:'buro',p:[[345,90]]},
+ {t:'Домофон / видеодомофон: кабель и интернет на 150 см + розетка для блока питания',k:'n',h:150,q:2,m:1,s:'buro',p:[[372,150,'o'],[390,150,'n']]},
+ {t:'Над пуфом или у зеркала: розетка для зарядки и сушилки для обуви, 50–60 см',k:'s',h:55,m:0,s:'buro',p:[[412,58]]},
+ {t:'Электросамокат или велосипед хранится в прихожей — розетка на отдельной линии с УЗО',k:'s',h:30,m:0,s:'buro',p:[[220,30]]},
+ {t:'Питание умного замка или видеоглазка — по модели',k:'o',m:0,s:'intl',p:[[318,180]]},
+ {t:'Ночная подсветка пола по датчику движения — дорога в санузел',k:'l',m:0,s:'intl'},
+ {t:'Подсветка внутри шкафа от датчика открывания двери',k:'l',m:0,s:'buro'},
+ {t:'Подсветка зеркала: свет на лицо, а не только сверху',k:'l',m:0,s:'buro'},
+ {t:'Коридор длиннее 3 м: проходные выключатели или датчик движения и хотя бы одна свободная розетка',k:'w',m:1,s:'intl'}
+]},
+{id:'kitchen',grp:'Квартира',name:'Кухня',lead:'Расставляется по чертежу гарнитура и инструкциям техники: у встраиваемых приборов зона подключения указана заводом. Розетки техники — в цоколе и соседних секциях, не за приборами.',
+ wall:{w:340,h:240,title:'Развёртка кухни, пример на 3,4 м',els:[
+  {t:'box',x:0,y:0,w:60,h:215,label:'Холодильник',ly:110},
+  {t:'box',x:60,y:0,w:60,h:215},
+  {t:'box',x:60,y:80,w:60,h:60,label:'Духовка'},
+  {t:'box',x:60,y:145,w:60,h:40,label:'СВЧ',ly:175},
+  {t:'box',x:120,y:0,w:80,h:90,label:'Мойка',ly:72},
+  {t:'box',x:200,y:0,w:60,h:90,label:'ПММ',ly:60},
+  {t:'box',x:260,y:0,w:80,h:90,label:'Варочная',ly:60},
+  {t:'box',x:120,y:150,w:140,h:70,label:'Верхние шкафы'},
+  {t:'box',x:260,y:150,w:80,h:70,label:'Вытяжка'},
+  {t:'top',x1:118,x2:342,y:90},
+  {t:'hob',x1:272,x2:330,y:92},
+  {t:'hl',x1:120,x2:340,y:10},
+  {t:'led',x1:124,x2:256,y:148,item:'kitchen-11'}]},
+ items:[
+ {t:'Фартук: 3–5 свободных розеток на 105–115 см (15–20 см над столешницей), шаг не больше 1,2 м; одна под чайник',k:'s',h:110,q:'3–5',m:1,s:'buro',p:[[214,110],[230,110],[246,110]]},
+ {t:'Розетки фартука не ближе 30 см к мойке и варочной поверхности, не на стыке фартука и не на рейлинге',k:'x',m:1,s:'intl'},
+ {t:'Варочная панель: силовая розетка или вывод в цоколе под панелью, 5 см, отдельная линия',k:'p',h:5,m:1,s:'ru',p:[[300,5,'p']]},
+ {t:'Духовой шкаф в колонне: по центру пенала, 55 см (до 70), отдельная линия',k:'s',h:55,m:1,s:'buro',p:[[90,55]]},
+ {t:'Духовой шкаф под варочной: в цоколе, в одной рамке с розеткой варочной, 5 см',k:'s',h:5,m:0,s:'buro'},
+ {t:'СВЧ или кофемашина в колонне: 160 см по центру пенала; отдельностоящая — за прибором',k:'s',h:160,m:0,s:'buro',p:[[90,160]]},
+ {t:'ПММ: в соседней секции 10–20 см от края, 20–40 см от пола; за машиной не ставим',k:'s',h:30,m:1,s:'buro',p:[[186,30]]},
+ {t:'Холодильник встроенный: в цоколе или соседней секции 5–10 см от края, 5 см; отдельностоящий — за ним на 20 см',k:'s',h:5,m:1,s:'buro',p:[[68,6]]},
+ {t:'Встраиваемая вытяжка: 200 см сбоку в той же секции; потолочная или настенная — вывод по модели',k:'s',h:200,m:1,s:'buro',p:[[330,200]]},
+ {t:'Измельчитель и фильтр с насосом: по розетке на прибор в секции мойки, 30–50 см; кнопка измельчителя на столешнице',k:'s',h:40,m:0,s:'buro',p:[[140,40]]},
+ {t:'Подсветка рабочей зоны под верхними шкафами: блок питания с доступом, выключатель у входа или сенсор',k:'l',m:1,s:'buro'},
+ {t:'Остров: розетки в боковой стенке или выдвижной блок в столешнице, кабель в полу',k:'s',m:0,s:'intl'},
+ {t:'Обеденный стол у стены: 2 розетки на 90 см (или 20 см, если на стене декор)',k:'s',h:90,q:2,m:0,s:'buro'},
+ {t:'Свет над столом по центру стола, низ подвеса на 60–75 см над столешницей; отдельная группа с диммером',k:'l',m:1,s:'buro'},
+ {t:'Газовый котёл: 2 розетки — котёл и датчик загазованности',k:'s',q:2,m:1,s:'ru'},
+ {t:'Датчики протечки под мойкой и ПММ, питание крана с электроприводом',k:'x',m:0,s:'buro'},
+ {t:'Розетки в шкафу для мелкой техники (тостер, мультиварка), если фартук должен остаться «чистым»',k:'s',m:0,s:'intl'},
+ {t:'Кофемашина или холодильник с подключением к воде — вывод воды и розетка в одной секции',k:'x',m:0,s:'buro'}
+]},
+{id:'living',grp:'Квартира',name:'Гостиная',lead:'Главные точки — ТВ-зона и диван. Розетки прячутся за телевизором и тумбой, провода идут в кабель-канале; остальное добирают свободными розетками по периметру.',
+ wall:{w:400,h:270,title:'ТВ-стена, пример на 4 м',els:[
+  {t:'box',x:100,y:0,w:200,h:45,label:'ТВ-тумба',lx:272,ly:30,fs:.85},
+  {t:'box',x:130,y:95,w:140,h:80,label:'ТВ',lx:155,ly:160},
+  {t:'box',x:320,y:85,w:70,h:150,label:'Окно'},
+  {t:'cable',x:252,y1:125,y2:47,item:'living-3'}]},
+ items:[
+ {t:'За ТВ: 2 × 220 В + интернет на 130 см, сбоку от центра, чтобы корпус ТВ их закрывал',k:'s',h:130,q:3,m:1,s:'buro',p:[[200,130],[215,130],[232,130,'n']]},
+ {t:'ТВ-тумба: 4 × 220 В + интернет + выход кабель-канала на 20 см (приставка, саундбар, консоль)',k:'s',h:20,q:6,m:1,s:'buro',p:[[140,20],[155,20],[170,20],[185,20],[202,20,'n'],[219,20,'o']]},
+ {t:'Кабель-канал (гофра Ø 32–40 мм) между ТВ и тумбой — HDMI не висят по стене',k:'o',m:1,s:'buro'},
+ {t:'Проектор: розетка и HDMI на потолке, питание электроэкрана в нише',k:'o',m:0,s:'intl'},
+ {t:'Акустика в стенах или потолке: акустический кабель до тумбы',k:'o',m:0,s:'intl'},
+ {t:'У дивана 2 розетки сбоку на 20 см; диван в центре комнаты — напольный лючок',k:'s',h:20,q:2,m:1,s:'buro'},
+ {t:'Торшер: розетка на 20 см, лучше управляемая выключателем у входа',k:'s',h:20,m:0,s:'intl'},
+ {t:'Розетка у кресла для чтения',k:'s',h:20,m:0,s:'buro'},
+ {t:'Кондиционер: вывод на отдельной линии, трасса фреона и дренажа заложена до стяжки',k:'p',h:245,m:1,s:'buro',p:[[60,245,'o']]},
+ {t:'Бризер: розетка по модели, чаще 80–150 см рядом с отверстием в стене',k:'s',m:0,s:'buro'},
+ {t:'Большая квартира: 220 В + интернет под точку Wi-Fi, лучше под потолком',k:'n',m:0,s:'buro'},
+ {t:'1–2 свободные розетки по периметру на 20 см (пылесос, ёлка, обогреватель)',k:'s',h:20,m:1,s:'intl',p:[[30,20]]},
+ {t:'Откосы окон: розетки под гирлянды, 15 см от верха откоса',k:'s',h:220,q:2,m:0,s:'buro',p:[[326,220],[384,220]]},
+ {t:'Электрокарниз или электрошторы: выводы у карниза',k:'o',m:0,s:'intl',p:[[355,250,'o']]},
+ {t:'Подсветка стеллажей, картин, ниш: выводы и место для блока питания с доступом',k:'l',m:0,s:'buro'},
+ {t:'Электрокамин: розетка внутри портала по инструкции очага',k:'s',m:0,s:'buro'}
+]},
+{id:'bedroom',grp:'Квартира',name:'Спальня',lead:'Всё строится от кровати: светом и розетками должно быть удобно управлять лёжа, с обеих сторон.',
+ wall:{w:360,h:170,title:'Стена у изголовья, пример на 3,6 м',els:[
+  {t:'box',x:100,y:0,w:160,h:115,label:'Изголовье',ly:80},
+  {t:'box',x:40,y:0,w:55,h:55,label:'Тумба',fs:.85},
+  {t:'box',x:265,y:0,w:55,h:55,label:'Тумба',fs:.85},
+  {t:'led',x1:106,x2:254,y:4,item:'bedroom-5'}]},
+ items:[
+ {t:'По 2 розетки с каждой стороны кровати на 70 см (над тумбой ~55 см) или на 60 см над низкой тумбой',k:'s',h:70,q:4,m:1,s:'buro',p:[[55,70],[70,70],[290,70],[305,70]]},
+ {t:'Проходной выключатель общего света у кровати и у входа',k:'w',h:70,m:1,s:'intl',p:[[84,70],[276,70]]},
+ {t:'Выводы под бра или подвесы: 110–130 см по оси тумбы; ширина изголовья и тумб известна до разметки',k:'o',h:120,q:2,m:1,s:'buro',p:[[67,125],[292,125]]},
+ {t:'Отдельные клавиши бра с каждой стороны кровати',k:'w',m:0,s:'buro'},
+ {t:'Ночная подсветка под кроватью или у пола на датчике движения',k:'l',m:0,s:'intl'},
+ {t:'ТВ: 2 × 220 В + интернет на 140 см за телевизором',k:'s',h:140,q:3,m:0,s:'buro'},
+ {t:'Комод или туалетный столик: 2 розетки на 90–100 см (фен, стайлер) и свет на лицо у зеркала',k:'s',h:95,q:2,m:0,s:'buro'},
+ {t:'Кондиционер не над кроватью — поток воздуха не на голову',k:'p',m:1,s:'buro'},
+ {t:'Розетка под бризер или увлажнитель',k:'s',m:0,s:'buro'},
+ {t:'Электрокарниз или рулонные шторы блэкаут с управлением от кровати',k:'o',m:0,s:'intl'},
+ {t:'1–2 свободные розетки по периметру на 20 см',k:'s',h:20,m:1,s:'intl',p:[[345,20]]},
+ {t:'Подсветка внутри шкафа от датчика открывания',k:'l',m:0,s:'buro'},
+ {t:'Розетка внутри прикроватной тумбы для скрытой зарядки — если тумба на заказ',k:'s',m:0,s:'buro'}
+]},
+{id:'kids',grp:'Квартира',name:'Детская',lead:'Детская меняется каждые 3–4 года, поэтому электрику закладывают на вырост: малыш, школьник, подросток.',
+ wall:{w:360,h:170,title:'Стена с кроватью и рабочим местом',els:[
+  {t:'box',x:10,y:0,w:190,h:50,label:'Кровать',ly:25},
+  {t:'box',x:225,y:0,w:125,h:75,label:'Письменный стол',ly:45,fs:.85},
+  {t:'led',x1:16,x2:194,y:3,item:'kids-9'}]},
+ items:[
+ {t:'Розетки со шторками (защита от детей) во всей комнате',k:'s',m:1,s:'intl'},
+ {t:'Низкие розетки в игровой зоне закрыты мебелью или подняты; для малыша — не ниже 1 м. В детских учреждениях норма — 1,8 м (СП 256, п. 15.36)',k:'s',h:100,m:1,s:'ru'},
+ {t:'У кровати: розетка под ночник и радионяню',k:'s',h:70,q:2,m:1,s:'buro',p:[[208,70]]},
+ {t:'Выключатель на высоте, доступной ребёнку, 80–90 см',k:'w',h:85,m:0,s:'buro',p:[[355,85]]},
+ {t:'Пеленальный столик: розетка под лампу и подогреватель бутылочек',k:'s',m:0,s:'buro'},
+ {t:'Рабочее место школьника: блок под столом на 20 см (3 × 220 В + интернет) и над столом на 90 см',k:'s',h:20,q:6,m:1,s:'buro',p:[[240,20],[255,20],[270,20,'n'],[290,95],[305,95],[320,95]]},
+ {t:'Настольная лампа слева для правши (справа для левши) — розетка с нужной стороны',k:'x',m:0,s:'buro'},
+ {t:'Освещённость стола 300–500 лк, свет 4000 K для уроков',k:'l',m:1,s:'intl'},
+ {t:'Ночной свет с диммером или отдельной линией',k:'l',m:0,s:'buro'},
+ {t:'Резерв под игровую приставку и ТВ подростка',k:'s',m:0,s:'buro'},
+ {t:'Нет светильников и выключателей в зоне шведской стенки и над вторым ярусом кровати',k:'x',m:1,s:'buro'}
+]},
+{id:'bath',grp:'Квартира',name:'Ванная и санузел',lead:'Розетки ставят только вне зон 0, 1 и 2 — дальше 60 см от ванны или душа — и только через УЗО 30 мА (ГОСТ Р 50571.7.701, он же IEC 60364-7-701). В Великобритании строже: от 3 м до границы зоны 1.',
+ wall:{w:430,h:250,title:'Зоны по ГОСТ Р 50571.7.701',zones:true,els:[
+  {t:'zone',x:0,y:0,w:170,h:225,tone:'warn',label:'Зона 1',sub:'до 2,25 м',ly:150},
+  {t:'zone',x:170,y:0,w:60,h:225,tone:'warn2',label:'Зона 2',sub:'IPX4',ly:150},
+  {t:'zone',x:0,y:0,w:170,h:60,tone:'crit',label:'Зона 0 — в ванне',ly:30},
+  {t:'zone',x:230,y:0,w:200,h:225,tone:'ok',label:'Вне зон',ly:212,nob:1},
+  {t:'box',x:250,y:0,w:100,h:85,label:'Раковина',ly:45},
+  {t:'box',x:275,y:110,w:60,h:80,label:'Зеркало'},
+  {t:'box',x:360,y:0,w:60,h:85,label:'Стиральная',ly:45,fs:.8},
+  {t:'dim',x1:170,x2:230,y:-12,label:'0,6 м'}]},
+ items:[
+ {t:'Розетки только вне зон 0–2 (дальше 60 см от ванны или душа), с крышкой IP44 и через УЗО 30 мА',k:'x',m:1,s:'ru'},
+ {t:'У раковины: 2 розетки около 100 см, желательно в 60 см от воды; можно спрятать в зеркальный шкаф',k:'s',h:100,q:2,m:1,s:'buro',p:[[254,100],[267,100]]},
+ {t:'Подсветка и подогрев зеркала — вывод за зеркалом по модели',k:'o',m:0,s:'buro',p:[[305,200]]},
+ {t:'Стиральная машина: розетка на 100 см по центру пенала, отдельная линия с УЗО',k:'p',h:100,m:1,s:'buro',p:[[390,100]]},
+ {t:'Сушильная машина в колонне: розетка на 190 см по центру пенала',k:'s',h:190,m:0,s:'buro'},
+ {t:'Полотенцесушитель: скрытый вывод на 100 см в углу габарита изделия; выключатель или таймер вне ванной',k:'o',h:100,m:0,s:'buro',p:[[238,100]]},
+ {t:'Накопительный бойлер: отдельная линия, розетка или вывод',k:'p',m:0,s:'buro'},
+ {t:'Ниша над инсталляцией: 2 розетки — защита от протечек и проточный водонагреватель',k:'s',q:2,m:0,s:'buro'},
+ {t:'Унитаз с биде-функцией или подогревом: розетка за инсталляцией с лючком доступа',k:'s',m:0,s:'intl'},
+ {t:'Тёплый пол: терморегулятор снаружи или вне зон, датчик в гофре, чтобы его можно было заменить',k:'x',m:1,s:'buro'},
+ {t:'Вытяжной вентилятор с таймером или датчиком влажности, своя клавиша',k:'w',m:0,s:'intl'},
+ {t:'Выключатели света снаружи у двери',k:'w',m:1,s:'buro'},
+ {t:'Светильники в душевой IP65, подсветка ниш 12/24 В, блок питания вне влажных зон с доступом',k:'l',m:1,s:'ru'},
+ {t:'Датчики протечки под ванной, у стиральной машины и коллектора',k:'x',m:0,s:'buro'},
+ {t:'Система уравнивания потенциалов (СУП) — по схеме электрика',k:'x',m:1,s:'ru'}
+]},
+{id:'office',grp:'Квартира',name:'Кабинет',lead:'Рабочее место планируют под реальную технику и видеосвязь: свет на лицо спереди, провода в кабель-канале стола.',
+ wall:{w:300,h:170,title:'Стена с рабочим столом',els:[
+  {t:'box',x:40,y:0,w:170,h:75,label:'Стол',ly:45},
+  {t:'box',x:230,y:0,w:60,h:160,label:'Стеллаж',ly:120}]},
+ items:[
+ {t:'Под столом: 3 × 220 В + интернет на 20 см (системный блок, ИБП, принтер)',k:'s',h:20,q:4,m:1,s:'buro',p:[[60,20],[75,20],[90,20],[107,20,'n']]},
+ {t:'Над столом: 3 × 220 В на 90 см (лампа, зарядка, монитор)',k:'s',h:90,q:3,m:1,s:'buro',p:[[150,90],[165,90],[180,90]]},
+ {t:'Стол в центре комнаты — напольный лючок или блок в столешнице',k:'s',m:0,s:'intl'},
+ {t:'Видеозвонки: свет на лицо спереди, не за спиной; освещённость стола 300–500 лк',k:'l',m:1,s:'intl'},
+ {t:'Стол с подъёмным механизмом — запас длины шнура и розетка под мотор',k:'x',m:0,s:'buro'},
+ {t:'Подсветка стеллажа — вывод и место для блока питания',k:'l',m:0,s:'buro',p:[[260,165,'o']]}
+]},
+{id:'service',grp:'Квартира',name:'Гардероб, постирочная, балкон',lead:'Подсобные помещения: свет по датчикам, отдельные линии для стирки и сушки, защищённые розетки на балконе.',items:[
+ {g:'Гардеробная и кладовая',t:'Подсветка по датчику движения или открывания, свет на вещи, а не сверху за спиной',k:'l',m:1,s:'buro'},
+ {t:'Розетка под отпариватель, гладильную доску, сушилку для обуви',k:'s',m:0,s:'buro'},
+ {t:'Место для роутера и блоков питания подсветки',k:'o',m:0,s:'buro'},
+ {g:'Постирочная',t:'Стиральная и сушильная — отдельные линии с УЗО, розетки на 100 и 190 см в колонне',k:'p',m:1,s:'ru'},
+ {t:'Розетка под утюг над столешницей, сушилка для белья с электроприводом',k:'s',m:0,s:'buro'},
+ {t:'Датчик протечки и трап в полу',k:'x',m:0,s:'buro'},
+ {g:'Балкон и лоджия',t:'Розетка IP44 с крышкой через УЗО (гирлянды, обогреватель, пылесос)',k:'s',m:1,s:'ru'},
+ {t:'Свет с выключателем изнутри комнаты',k:'w',m:1,s:'buro'},
+ {t:'Тёплый пол или конвектор на утеплённой лоджии — отдельная линия',k:'p',m:0,s:'buro'},
+ {t:'Розетка у наружного блока кондиционера, если он на балконе (для сервиса)',k:'s',m:0,s:'buro'}
+]},
+{id:'light',grp:'Квартира',name:'Освещение и управление',lead:'В каждой комнате — не меньше двух-трёх слоёв света на отдельных клавишах: общий, рабочий и акцентный. Это проще и дешевле, чем одна люстра с диммером.',table:'layers',items:[
+ {t:'Проходные выключатели: коридор (оба конца), спальня (дверь + кровать), кухня-гостиная с двумя входами, лестница',k:'w',m:1,s:'intl'},
+ {t:'Клавиши подписаны в проекте: какая клавиша — какая группа светильников',k:'w',m:1,s:'buro'},
+ {t:'Диммеры совместимы с драйверами светильников (проверено по паспорту)',k:'l',m:1,s:'buro'},
+ {t:'Блоки питания лент и треков с доступом (лючок, шкаф), запас мощности 20–30%',k:'l',m:1,s:'buro'},
+ {t:'В жилых комнатах светильники с CRI ≥ 90, без мерцания',k:'l',m:0,s:'intl'},
+ {t:'Решение по умному дому принято до черновой электрики (проводной KNX или беспроводной)',k:'x',m:1,s:'buro'},
+ {t:'Сценарии согласованы с клиентом: «вечер», «кино», «ночь», «ушёл из дома»',k:'x',m:0,s:'intl'}
+]},
+{id:'smart',grp:'Квартира',name:'Умный дом',lead:'Состав системы зависит от уровня оснащения, выбранного вверху: «Минимум» — беспроводной умный дом, «Стандарт» — контроллер и реле в щите, «Максимум» — шина KNX. Нажмите «i», чтобы прочитать объяснение простым языком. Решение принимают до черновой электрики: беспроводную систему можно добавить потом, проводную — только пока стены открыты.',table:'smart',items:[
+ {g:'Решение',t:'Уровень системы выбран вместе с клиентом до черновой электрики',k:'x',m:1,s:'buro',lv:[1,2,3],e:'Уровень определяет, сколько проводов нужно спрятать в стены. Беспроводные устройства можно купить и поставить после ремонта. Проводную систему — только пока стены не оштукатурены. Если отложить решение, потом придётся штробить готовую отделку.'},
+ {t:'Выбрана экосистема: Алиса, Салют, Apple Home, Google Home или Home Assistant; совместимость устройств проверена до покупки',k:'x',m:1,s:'intl',lv:[1,2,3],e:'Экосистема — это приложение и голосовой помощник, через которые вы управляете домом. Устройства одного бренда не всегда работают с приложением другого. Стандарт Matter создан, чтобы техника разных производителей понимала друг друга: например, у Яндекса есть розетки и ленты с Matter, а хаб Сбера работает по Zigbee. Перед покупкой проверьте, что все устройства видны в выбранном приложении.'},
+ {t:'Сценарии прописаны с клиентом: «ушёл из дома», «ночь», «кино», «протечка», «отъезд»',k:'x',m:1,s:'buro',lv:[1,2,3],e:'Сценарий — несколько действий одной командой. «Ушёл из дома»: гаснет свет, закрываются шторы, выключается кондиционер, но холодильник и роутер работают. Когда сценарии придуманы заранее, электрик сразу разводит нужные линии отдельно.'},
+ {t:'Обычные выключатели продолжают работать: умные лампы и реле не оставят дом без света при сбое интернета',k:'w',m:1,s:'intl',lv:[1],e:'В простой системе умные лампы или маленькие реле за выключателем управляются через приложение. Важно, чтобы свет можно было включить и рукой, если пропал интернет или разрядился телефон.'},
+ {t:'Свет включается кнопками даже без интернета: логика работает в контроллере, а не в облаке',k:'w',m:1,s:'intl',lv:[2,3],e:'Облако — это сервер производителя в интернете. Если управление идёт через него, при сбое связи кнопки перестают работать. Контроллер в щите обрабатывает команды прямо в квартире, поэтому свет включается всегда.'},
+ {t:'Интегратор или наладчик системы выбран до черновой электрики и согласовал схему щита',k:'x',m:1,s:'buro',lv:[2,3],e:'Интегратор — специалист, который программирует умный дом. Ему нужна определённая разводка проводов. Если позвать его после ремонта, может оказаться, что провода проложены не так.'},
+ {g:'Щит и проводка',t:'Нулевой провод и глубокие подрозетники (60 мм) во всех точках выключателей',k:'w',m:1,s:'intl',lv:[1,2,3],e:'Умному выключателю нужно постоянное питание. Для этого в коробку под ним заводят нулевой провод («ноль»). Без него многие модели не работают или вызывают мерцание светодиодных ламп. Глубокая коробка нужна, чтобы за выключателем поместилось реле.'},
+ {t:'Место в щите под контроллер, реле, диммеры и блоки питания: +30–50% модулей или отдельный щит автоматизации',k:'o',m:1,s:'buro',lv:[2,3],e:'Реле — это электронный выключатель, который размещают в щите. Каждой группе света и штор нужно своё реле, поэтому щит получается заметно больше обычного. Под него заранее оставляют нишу в стене или шкафу.'},
+ {t:'Каждая группа света и штор — своим кабелем до щита («звездой»), а не через выключатель',k:'p',m:1,s:'buro',lv:[2,3],e:'Обычно провод идёт от щита к лампе через выключатель. В умном доме каждую группу света ведут отдельным кабелем прямо в щит, где её включает реле. Тогда любую лампу можно включить кнопкой, голосом, датчиком или по расписанию.'},
+ {t:'Кнопки вместо выключателей подключены слаботочным кабелем к контроллеру',k:'n',m:1,s:'buro',lv:[2],e:'Кнопка на стене не включает свет сама, а отправляет команду контроллеру. По ней идёт безопасное низкое напряжение, поэтому кабель тонкий. Одна кнопка может управлять несколькими группами света или сценарием.'},
+ {t:'Шинный кабель KNX (J-Y(St)Y 2×2×0,8, зелёная оболочка) ко всем кнопкам, датчикам и терморегуляторам',k:'n',m:1,s:'intl',lv:[3],e:'KNX — международный стандарт проводного умного дома (ISO/IEC 14543-3, EN 50090). Все устройства соединены одним тонким кабелем — шиной — и «переговариваются» по нему. Устройства разных производителей совместимы, а система работает без центрального сервера.'},
+ {t:'Светильники с цифровым управлением DALI — для плавного диммирования каждой группы',k:'l',m:0,s:'intl',lv:[3],e:'DALI — цифровой протокол для светильников. Каждый светильник или группу можно плавно притушить и включить в нужной яркости. К драйверам светильников идёт дополнительная пара проводов.'},
+ {t:'Кабели управления проложены отдельно от силовых, промаркированы и занесены в кабельный журнал',k:'n',m:1,s:'ru',lv:[2,3],e:'Так требует ГОСТ Р 70300-2022 о кабелях умного дома. Силовой кабель может наводить помехи на слаботочный, поэтому их разносят. Маркировка и журнал нужны, чтобы через несколько лет мастер понял, какой провод куда идёт.'},
+ {t:'Пустые гофры от щита в каждую комнату и к потолку — под будущие датчики и точки доступа',k:'o',m:0,s:'intl',lv:[1,2,3],e:'Гофра — пустая гибкая труба в стене. Через неё потом можно протянуть новый кабель без штробления. Это дешёвая страховка на будущее.'},
+ {g:'Сеть',t:'Wi-Fi покрывает всю квартиру ровно: точки доступа на потолке подключены кабелем Cat6 с питанием PoE',k:'n',m:1,s:'intl',lv:[1,2,3],e:'Беспроводные устройства работают только при хорошем Wi-Fi. Одного роутера в прихожей часто мало. Точки доступа на потолке, подключённые кабелем, дают ровную связь во всех комнатах. PoE — питание по тому же сетевому кабелю, розетка у точки не нужна. Обычно хватает одной точки на 2–3 комнаты.'},
+ {t:'Хаб или умная колонка-хаб стоит ближе к центру квартиры, рядом есть розетка',k:'s',m:1,s:'buro',lv:[1],e:'Хаб — небольшой блок, через который датчики на батарейках связываются с телефоном (по Zigbee или Thread). Если он стоит в дальнем углу, сигнал до части комнат не дойдёт.'},
+ {t:'Cat6 к ТВ, рабочим местам, видеодомофону и камерам; сетевой шкаф в сухом вентилируемом месте',k:'n',m:1,s:'intl',lv:[2,3],e:'По кабелю интернет стабильнее и быстрее, чем по Wi-Fi. Всё сетевое оборудование собирают в одном шкафу, где ему не жарко и до него легко добраться.'},
+ {t:'Видеодомофон с сетевым интерфейсом — открыть дверь и увидеть гостя со смартфона',k:'n',m:0,s:'ru',lv:[1,2,3],e:'Для многоквартирных домов такие домофоны описывает ГОСТ Р 71872-2024. В квартире к панели нужен сетевой кабель и розетка для блока питания.'},
+ {g:'Безопасность и вода',t:'Защита от протечек: датчики на полу под ванной, мойкой, ПММ, стиральной и у коллектора; краны с электроприводом после ручных вводных кранов; модуль с ИБП',k:'x',m:1,s:'buro',lv:[1,2,3],e:'Датчик на полу замечает воду и за секунды перекрывает краны на вводе. Это самая окупаемая функция умного дома: залив соседей стоит дороже всей системы. Краны ставят после обычных вводных кранов, а не вместо них. Модулю нужна розетка и резервное питание, чтобы он сработал и при отключении света.'},
+ {t:'Датчики дыма в коридоре и жилых комнатах; на кухне с газом — датчик утечки газа',k:'x',m:1,s:'ru',lv:[1,2,3],e:'Датчики дыма и газа входят в базовый набор умного дома по российским ГОСТам 2024 года. Умный датчик не только пищит, но и присылает уведомление на телефон, даже если дома никого нет.'},
+ {t:'Умные счётчики воды и электроэнергии с передачей показаний',k:'x',m:0,s:'ru',lv:[2,3],e:'Показания уходят сами, а резкий рост расхода воды может подать сигнал о скрытой протечке. Для этого у счётчика должен быть импульсный или цифровой выход.'},
+ {t:'Датчики открытия окон и входной двери',k:'x',m:0,s:'intl',lv:[1,2,3],e:'Подскажут, что окно осталось открытым перед уходом, и могут выключить кондиционер или отопление, пока проветривается комната.'},
+ {g:'Комфорт',t:'Шторы: приводы на аккумуляторе или розетка у карниза',k:'s',m:0,s:'intl',lv:[1],e:'В простой системе подойдут приводы со встроенным аккумулятором — их заряжают раз в несколько месяцев. Если хочется без зарядки, у карниза нужна розетка, её прячут за шторой.'},
+ {t:'Шторы и карнизы: питание 220 В и кабель управления у карниза, тип привода выбран до штукатурки',k:'o',m:1,s:'intl',lv:[2,3],e:'Проводной привод надёжнее и не требует зарядки, но кабель к нему нужно проложить заранее, до отделки. Тип привода влияет на то, какой провод тянуть, поэтому его выбирают на этапе проекта.'},
+ {t:'Тёплый пол и радиаторы управляются терморегуляторами с Wi-Fi или от контроллера',k:'x',m:0,s:'buro',lv:[1,2,3],e:'Тогда пол можно прогреть к приходу домой или выключить на время отпуска. Датчик температуры пола укладывают в гофре, чтобы его можно было заменить.'},
+ {t:'Кондиционеры: Wi-Fi модуль, ИК-шлюз или проводной интерфейс к контроллеру',k:'x',m:0,s:'intl',lv:[1,2,3],e:'Многие кондиционеры уже умеют работать через приложение. Если нет, подойдёт ИК-шлюз — он «нажимает» кнопки пульта. В проводной системе используют интерфейс, который советует поставщик кондиционера.'},
+ {t:'Датчики движения в коридоре, санузлах и гардеробной',k:'x',m:0,s:'intl',lv:[1,2,3],e:'Свет включается сам, когда вы входите, и гаснет, когда уходите. Особенно удобно ночью и с полными руками.'},
+ {t:'Датчики CO₂ и влажности в спальнях и детской связаны с бризером или вентиляцией',k:'x',m:0,s:'intl',lv:[2,3],e:'Когда в спальне душно, датчик CO₂ сам включает приток свежего воздуха. Хороший воздух ночью заметно влияет на сон.'},
+ {t:'Встроенная акустика по комнатам (мультирум) — кабели от усилителя к каждой зоне',k:'o',m:0,s:'intl',lv:[3],e:'Мультирум — музыка, которая играет в разных комнатах из одного источника. Акустику встраивают в потолок, а кабели от усилителя прокладывают на этапе черновых работ.'},
+ {g:'Надёжность',t:'ИБП для роутера, хаба или контроллера и модуля протечек',k:'p',m:1,s:'buro',lv:[1,2,3],e:'ИБП — источник бесперебойного питания с аккумулятором. При коротком отключении электричества умный дом не перезагружается, а защита от протечек продолжает работать.'},
+ {t:'Постоянно включённые линии (холодильник, котёл, роутер, защита от протечек) не отключаются сценарием «ушёл из дома»',k:'p',m:1,s:'buro',lv:[2,3],e:'Сценарий «выключить всё» не должен выключать то, что обязано работать всегда. Такие линии в щите выделяют отдельно.'},
+ {t:'Реле в щите с ручным переключателем — свет можно включить при отказе контроллера',k:'x',m:0,s:'buro',lv:[2,3],e:'Если контроллер сломался, электрик или сам владелец включит нужные линии прямо в щите, не дожидаясь ремонта.'},
+ {t:'Клиенту переданы схема щита, список устройств, логины и инструкция по ручному управлению',k:'x',m:1,s:'buro',lv:[1,2,3],e:'Через несколько лет никто не вспомнит, какое реле за что отвечает. Документы позволят любому мастеру быстро разобраться и что-то поменять.'}
+]},
+{id:'public',grp:'Общественные',name:'Общественные помещения',lead:'К удобству добавляются обязательные нормы: освещённость рабочих мест, аварийный свет, пожарная сигнализация. Электропроект делает проектировщик с допуском; дизайнер готовит задание по этому списку.',table:'lux',items:[
+ {g:'Офис и переговорные',t:'Рабочие места: лючки в полу или силовые колонны, по 4 × 220 В + 2 RJ45 на место',k:'s',q:6,m:1,s:'buro'},
+ {t:'Переговорная: лючок в столе (220 В, HDMI/USB-C), питание панели и камеры на стене, диммер для видеосвязи',k:'s',m:1,s:'intl'},
+ {g:'Кафе и ресторан',t:'Сцены света «день / вечер»; управление светом зала из служебной зоны',k:'l',m:1,s:'buro'},
+ {t:'Розетки у барной стойки, диванов, витрин, кассы; фоновая музыка',k:'s',m:0,s:'buro'},
+ {t:'Кухня: трёхфазное оборудование, выводы по технологическому заданию, IP44 и выше',k:'p',m:1,s:'ru'},
+ {g:'Магазин',t:'Треки с запасом питания, розетки в витринах и стеллажах, касса с ИБП',k:'s',m:1,s:'buro'},
+ {t:'Вывеска и витринное освещение — отдельные группы с таймером',k:'p',m:0,s:'buro'},
+ {g:'Салон красоты и клиника',t:'У каждого кресла 2–3 розетки на 90–110 см; мойки и сушуары на отдельных линиях',k:'s',h:100,m:1,s:'buro'},
+ {t:'Клиника: розетки по техзаданию оборудования, бактерицидные лампы с выключателем снаружи кабинета',k:'w',m:1,s:'ru'},
+ {g:'Безопасность — для любого помещения',t:'Эвакуационное освещение: не менее 1 лк на полу по оси пути эвакуации (СП 52, EN 1838)',k:'l',m:1,s:'ru'},
+ {t:'Антипаническое освещение больших залов: не менее 0,5 лк',k:'l',m:1,s:'intl'},
+ {t:'Знаки «Выход» над эвакуационными дверьми и на поворотах, с аккумулятором не менее 1 ч',k:'l',m:1,s:'ru'},
+ {t:'Датчики пожарной сигнализации согласованы с рисунком светильников и декором потолка',k:'x',m:1,s:'buro'},
+ {t:'Ремонтные розетки для уборки в коридорах и залах каждые 10–15 м',k:'s',m:0,s:'buro'},
+ {t:'Раздельные группы: зал, витрины, вывеска, дежурный свет, кухня, слаботочка и серверная (с ИБП)',k:'p',m:1,s:'buro'},
+ {t:'Санузлы: свет по датчику, сушилка для рук на отдельной линии, кнопка вызова в санузле для МГН',k:'x',m:1,s:'ru'},
+ {t:'Доступность: выключатели и кнопки вызова на 0,8–1,1 м, розетки не ниже 0,4–0,45 м',k:'w',m:1,s:'ru'},
+ {t:'Видеонаблюдение, СКУД, терминалы оплаты — выводы и сеть заложены до чистовой отделки',k:'n',m:1,s:'buro'}
+]},
+{id:'mistakes',grp:'Проверка',name:'Частые ошибки',lead:'Последний проход перед выдачей чертежей. Почти все ошибки возникают, когда розетки расставляют до мебели и без моделей техники.',items:[
+ {t:'Розетка за шкафом, диваном или изголовьем, которое оказалось шире или выше',k:'x',m:1,s:'buro'},
+ {t:'Розетка за встроенной техникой без доступа — чтобы обесточить ПММ, её придётся доставать',k:'x',m:1,s:'buro'},
+ {t:'Выключатель со стороны петель или за открытой дверью',k:'x',m:1,s:'buro'},
+ {t:'В спальне выключатель только у двери',k:'x',m:1,s:'buro'},
+ {t:'Розетки фартука на стыке плитки, на рейлинге или сразу у мойки и плиты',k:'x',m:1,s:'buro'},
+ {t:'Нет кабель-канала за ТВ — провода висят по стене',k:'x',m:1,s:'buro'},
+ {t:'Роутер в металлическом щите или в дальнем углу — слабый Wi-Fi',k:'x',m:1,s:'buro'},
+ {t:'Блок питания ленты зашит в ГКЛ без лючка',k:'x',m:1,s:'buro'},
+ {t:'Люстра по центру комнаты, а стол стоит у окна',k:'x',m:1,s:'buro'},
+ {t:'Розетки в ванной в зоне 2 или без УЗО',k:'x',m:1,s:'ru'},
+ {t:'Не учтена толщина пола: розетки «на 5 см» оказались под плинтусом',k:'x',m:1,s:'buro'},
+ {t:'Разные высоты розеток в одной комнате без причины',k:'x',m:0,s:'buro'},
+ {t:'Нет резерва в щите и пустых гофр — любое добавление означает штробление после ремонта',k:'x',m:1,s:'buro'}
+]}
+];
+ROOMS.forEach(r=>r.items.forEach((it,i)=>{it.id=r.id+'-'+(i+1);it.room=r.id}));
+const LV_ALL=[1,2,3],LV_STD=[2,3],LV_MAX=[3];
+const LV_OVR={
+ 'general-6':LV_STD,'general-11':LV_STD,'general-12':LV_ALL,'general-13':LV_STD,'general-15':LV_STD,'general-18':LV_STD,'general-19':LV_STD,'general-20':LV_ALL,'general-21':LV_MAX,
+ 'hall-4':LV_STD,'hall-5':LV_ALL,'hall-8':LV_STD,'hall-9':LV_STD,'hall-10':LV_MAX,'hall-11':LV_STD,'hall-12':LV_STD,'hall-13':LV_STD,
+ 'kitchen-5':LV_ALL,'kitchen-6':LV_ALL,'kitchen-10':LV_STD,'kitchen-12':LV_STD,'kitchen-13':LV_STD,'kitchen-16':LV_STD,'kitchen-17':LV_MAX,'kitchen-18':LV_MAX,
+ 'living-4':LV_MAX,'living-5':LV_MAX,'living-7':LV_ALL,'living-8':LV_STD,'living-10':LV_STD,'living-11':LV_STD,'living-13':LV_STD,'living-14':LV_MAX,'living-15':LV_STD,'living-16':LV_MAX,
+ 'bedroom-4':LV_STD,'bedroom-5':LV_STD,'bedroom-6':LV_ALL,'bedroom-7':LV_STD,'bedroom-9':LV_STD,'bedroom-10':LV_MAX,'bedroom-12':LV_STD,'bedroom-13':LV_MAX,
+ 'kids-4':LV_ALL,'kids-5':LV_ALL,'kids-7':LV_ALL,'kids-9':LV_STD,'kids-10':LV_STD,
+ 'bath-3':LV_STD,'bath-5':LV_STD,'bath-6':LV_ALL,'bath-7':LV_ALL,'bath-8':LV_STD,'bath-9':LV_MAX,'bath-11':LV_STD,'bath-14':LV_STD,
+ 'office-3':LV_MAX,'office-5':LV_MAX,'office-6':LV_STD,
+ 'service-2':LV_STD,'service-3':LV_STD,'service-5':LV_STD,'service-6':LV_STD,'service-9':LV_STD,'service-10':LV_STD,
+ 'light-5':LV_STD,'light-7':LV_MAX,
+ 'public-4':LV_ALL,'public-7':LV_STD,'public-14':LV_STD,'mistakes-12':LV_ALL
+};
+ROOMS.forEach(r=>r.items.forEach(it=>{if(!it.lv)it.lv=LV_OVR[it.id]||(it.m||r.id==='mistakes'?LV_ALL:LV_STD)}));
+const ALL=ROOMS.flatMap(r=>r.items);
+const BYID=Object.fromEntries(ALL.map(i=>[i.id,i]));
+
+const APPLIANCES=[
+ {id:'hob',n:'Индукционная варочная панель',kw:7.2,line:1,def:1},
+ {id:'oven',n:'Духовой шкаф',kw:3.5,line:1,def:1},
+ {id:'dw',n:'Посудомоечная машина',kw:2.1,line:1,def:1},
+ {id:'wm',n:'Стиральная машина',kw:2.2,line:1,def:1},
+ {id:'dryer',n:'Сушильная машина',kw:2.5,line:1,def:0},
+ {id:'kettle',n:'Чайник',kw:2.2,line:0,def:1},
+ {id:'mw',n:'СВЧ-печь',kw:1.2,line:0,def:1},
+ {id:'coffee',n:'Кофемашина',kw:1.4,line:0,def:1},
+ {id:'fridge',n:'Холодильник',kw:0.3,line:0,def:1},
+ {id:'hood',n:'Вытяжка',kw:0.25,line:0,def:1},
+ {id:'boiler',n:'Накопительный бойлер',kw:2.0,line:1,def:0},
+ {id:'floor',n:'Тёплый пол, на каждые 10 м²',kw:1.5,line:1,def:1},
+ {id:'ac',n:'Кондиционер, на каждый блок',kw:1.0,line:1,def:2},
+ {id:'iron',n:'Утюг или отпариватель',kw:2.0,line:0,def:1},
+ {id:'hair',n:'Фен',kw:1.8,line:0,def:1},
+ {id:'light',n:'Освещение всей квартиры',kw:0.8,line:0,def:1},
+ {id:'it',n:'Компьютер, ТВ, роутер',kw:0.8,line:0,def:1},
+ {id:'towel',n:'Электрический полотенцесушитель',kw:0.3,line:0,def:1}
+];
+
+/* ---------------- STATE / STORAGE ---------------- */
+const LSKEY='buro42-electro-v1';
+const uid=()=>Math.random().toString(36).slice(2,10);
+function exampleProject(){
+  const checks={};['general-1','general-3','general-5','hall-2','hall-6','kitchen-1','kitchen-3','kitchen-4','kitchen-7','living-1','living-2','bedroom-1','bath-1','bath-2'].forEach(k=>checks[k]=true);
+  const calc={};APPLIANCES.forEach(a=>calc[a.id]=a.def);
+  return {id:'example',name:'Пример: квартира 75 м²',checks,calc,limit:15,updated:Date.now()};
+}
+let S={projects:[],cur:null,filter:'all',hl:null,open:{}};
+let store={mode:'local',async save(p){try{const all=JSON.parse(localStorage.getItem(LSKEY)||'{}');all[p.id]=p;localStorage.setItem(LSKEY,JSON.stringify(all))}catch(e){}},async remove(id){try{const all=JSON.parse(localStorage.getItem(LSKEY)||'{}');delete all[id];localStorage.setItem(LSKEY,JSON.stringify(all))}catch(e){}}};
+function loadLocal(){try{const all=JSON.parse(localStorage.getItem(LSKEY)||'{}');return Object.values(all)}catch(e){return []}}
+function curP(){return S.projects.find(p=>p.id===S.cur)||S.projects[0]}
+
+let saveT=null,saving=false,pending=false;
+function queueSave(){clearTimeout(saveT);saveT=setTimeout(flush,600)}
+async function flush(){
+  if(saving){pending=true;return}
+  saving=true;const p=curP();p.updated=Date.now();
+  try{await store.save(JSON.parse(JSON.stringify(p)))}catch(e){setNote('Не удалось сохранить: '+(e&&e.code||'ошибка')+'. Отметки останутся до перезагрузки.')}
+  saving=false;if(pending){pending=false;flush()}
+}
+function setNote(t){document.getElementById('storeNote').textContent=t}
+
+async function initDb(){
+  if(!window.claude||!window.claude.use)return;
+  try{
+    const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db||!user)return;
+    const id=await user.id(); if(!id)return;
+    const col=db.collection('data/users/'+id);
+    const snap=await col.get();
+    let list=snap.docs.filter(d=>d.exists).map(d=>JSON.parse(JSON.stringify(d.data())));
+    const dbStore={mode:'db',async save(p){await col.doc(p.id).set(p)},async remove(pid){await col.doc(pid).delete()}};
+    if(!list.length){
+      const local=S.projects.filter(p=>p.id!=='example'||Object.keys(p.checks).length);
+      list=local.length?local:[exampleProject()];
+      for(const p of list){try{await dbStore.save(p)}catch(e){return}}
+    }
+    store=dbStore;
+    const keep=S.cur;
+    S.projects=list.sort((a,b)=>(b.updated||0)-(a.updated||0));
+    S.cur=S.projects.some(p=>p.id===keep)?keep:S.projects[0].id;
+    setNote('Проекты и отметки сохраняются в вашем аккаунте — видны только вам');
+    renderAll();
+  }catch(e){}
+}
+
+/* ---------------- HELPERS ---------------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function roomStats(r){const p=curP();const its=visItems(r);const d=its.filter(i=>p.checks[i.id]).length;return {d,n:its.length}}
+function kindIcon(k,size=14){
+  const c='var(--ink)';
+  const m={s:`<circle cx="7" cy="7" r="5" fill="none" stroke="${c}" stroke-width="1.6"/>`,
+  n:`<path d="M7 1.5l5.5 5.5L7 12.5 1.5 7z" fill="none" stroke="var(--coral)" stroke-width="1.6"/>`,
+  o:`<rect x="2" y="2" width="10" height="10" fill="none" stroke="${c}" stroke-width="1.6"/>`,
+  w:`<rect x="5.5" y="1" width="3" height="12" fill="${c}"/>`,
+  p:`<circle cx="7" cy="7" r="5" fill="var(--olive)" stroke="var(--olive)" stroke-width="1.6"/>`,
+  l:`<path d="M2 7h10" stroke="var(--coral)" stroke-width="2" stroke-dasharray="3 2"/>`,
+  x:`<path d="M3 7.5l2.5 2.5L11 4" fill="none" stroke="var(--muted)" stroke-width="1.6"/>`};
+  return `<svg class="kd" viewBox="0 0 14 14" width="${size}" height="${size}" aria-hidden="true">${m[k]||m.x}</svg>`;
+}
+
+/* ---------------- DRAWING ---------------- */
+function drawWall(r){
+  const W=r.wall, H=W.h, fs=(W.w+80)/30, rr=fs*.42;
+  const Y=h=>H-h;
+  const p=curP();
+  let g='';
+  const tones={crit:'var(--crit)',warn:'var(--warn)',warn2:'var(--warn)',ok:'var(--ok)'};
+  const ops={crit:.22,warn:.16,warn2:.07,ok:.07};
+  // wall outline
+  if(!W.zones) g+=`<rect x="0" y="0" width="${W.w}" height="${H}" fill="none" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  for(const e of W.els){
+    if(e.t==='zone'){g+=`<rect x="${e.x}" y="${Y(e.y+e.h)}" width="${e.w}" height="${e.h}" fill="${tones[e.tone]}" fill-opacity="${ops[e.tone]}" stroke="${e.nob?'none':tones[e.tone]}" vector-effect="non-scaling-stroke"/>`;
+      g+=`<text x="${e.x+e.w/2}" y="${Y(e.ly)}" text-anchor="middle" font-weight="600" font-size="${fs}" fill="var(--ink)">${esc(e.label)}</text>`;
+      if(e.sub)g+=`<text x="${e.x+e.w/2}" y="${Y(e.ly)+fs*1.3}" text-anchor="middle" font-size="${fs*.85}" fill="var(--muted)">${esc(e.sub)}</text>`;}
+  }
+  for(const e of W.els){
+    if(e.t==='box'){g+=`<rect x="${e.x}" y="${Y(e.y+e.h)}" width="${e.w}" height="${e.h}" fill="${e.acc?'var(--coral-soft)':'none'}" stroke="${e.acc?'var(--coral)':'var(--muted)'}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+      if(e.label){const lx=e.lx??(e.x+e.w/2),ly=e.ly??(e.y+e.h/2);const f=Math.min(fs*(e.fs||.9),(e.lx!=null?e.w*1.2:e.w*.92)/(e.label.length*.56));g+=`<text x="${lx}" y="${Y(ly)+f*.35}" text-anchor="middle" font-size="${f}" fill="var(--muted)">${esc(e.label)}</text>`}}
+    else if(e.t==='vl')g+=`<line x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/>`;
+    else if(e.t==='hl')g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--line)" vector-effect="non-scaling-stroke"/>`;
+    else if(e.t==='top')g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--muted)" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
+    else if(e.t==='hob')g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--olive)" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
+    else if(e.t==='led'&&!BYID[e.item].lv.includes(curLevel())){}
+    else if(e.t==='led')g+=`<g class="sym${p.checks[e.item]?' done':''}" data-item="${e.item}" tabindex="0" role="button" aria-label="${esc(BYID[e.item].t)}"><line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="transparent" stroke-width="${fs}"/><line class="ring mark" x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--coral)" stroke-width="2.2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/></g>`;
+    else if(e.t==='cable')g+=`<g class="sym${p.checks[e.item]?' done':''}" data-item="${e.item}" tabindex="0" role="button" aria-label="${esc(BYID[e.item].t)}"><line x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="transparent" stroke-width="${fs}"/><line class="ring mark" x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="var(--coral)" stroke-width="2.2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/></g>`;
+    else if(e.t==='dim'){g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><line x1="${e.x1}" x2="${e.x1}" y1="${Y(e.y)-4}" y2="${Y(e.y)+4}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><line x1="${e.x2}" x2="${e.x2}" y1="${Y(e.y)-4}" y2="${Y(e.y)+4}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><text x="${(e.x1+e.x2)/2}" y="${Y(e.y)+fs*1.3}" text-anchor="middle" font-size="${fs*.85}" fill="var(--muted)">${esc(e.label)}</text>`}
+  }
+  // floor + ruler
+  g+=`<line x1="-30" x2="${W.w+20}" y1="${H}" y2="${H}" stroke="var(--ink)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>`;
+  for(let h=50;h<=H;h+=50){g+=`<line x1="-8" x2="0" y1="${Y(h)}" y2="${Y(h)}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><text x="-11" y="${Y(h)+fs*.33}" text-anchor="end" font-family="var(--f-mono)" font-size="${fs*.72}" fill="var(--muted)">${h}</text>`}
+  g+=`<line x1="0" x2="0" y1="0" y2="${H}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/>`;
+  // symbols
+  r.items.forEach((it,idx)=>{ if(!it.p||!it.lv.includes(curLevel()))return;
+    let s='';
+    it.p.forEach(pt=>{const [x,h,kk]=pt;const k=kk||it.k;const cx=x,cy=Y(h);
+      if(k==='n')s+=`<path class="ring" d="M${cx} ${cy-rr*1.25}l${rr*1.25} ${rr*1.25}l${-rr*1.25} ${rr*1.25}l${-rr*1.25} ${-rr*1.25}z" fill="var(--surface)" stroke="var(--coral)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`;
+      else if(k==='o')s+=`<rect class="ring" x="${cx-rr}" y="${cy-rr}" width="${rr*2}" height="${rr*2}" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`;
+      else if(k==='w')s+=`<rect class="ring" x="${cx-rr*.35}" y="${cy-rr*1.4}" width="${rr*.7}" height="${rr*2.8}" fill="var(--ink)" stroke="var(--ink)" vector-effect="non-scaling-stroke"/>`;
+      else if(k==='p')s+=`<circle class="ring" cx="${cx}" cy="${cy}" r="${rr}" fill="var(--olive)" stroke="var(--olive)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`;
+      else s+=`<circle class="ring" cx="${cx}" cy="${cy}" r="${rr}" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`;
+      s+=`<circle class="hit" cx="${cx}" cy="${cy}" r="${rr*2}"/>`;
+    });
+    // number badge near first point
+    const [bx,bh]=it.p[0];
+    const num=idx+1;
+    s+=`<g class="mark"><text x="${bx}" y="${Y(bh)-rr*1.9}" text-anchor="middle" font-family="var(--f-mono)" font-size="${fs*.72}" font-weight="500" fill="var(--coral)">${num}</text></g>`;
+    g+=`<g class="sym${p.checks[it.id]?' done':''}" data-item="${it.id}" tabindex="0" role="button" aria-label="${esc(it.t)}">${s}</g>`;
+  });
+  const vbX=-50, vbY=-fs*2.2, vbW=W.w+80, vbH=H+fs*2.2+(W.zones?fs*3:fs*1.4);
+  return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" font-family="var(--f-body)" role="img" aria-label="${esc(W.title)}">${g}</svg>`;
+}
+
+
+const LEVELS=[
+ {n:1,t:'Минимум',b:'Эконом',d:'Всё, что требуют нормы и без чего неудобно жить: безопасная электрика, розетки под технику и мебель, обязательный свет.',inc:['Нормы ПУЭ и СП 256, УЗО, отдельные линии','Розетки под технику и расстановку мебели','Один-два слоя света, обычные выключатели','Умный дом: беспроводной — хаб и датчики протечки'],fit:'Аренда, вторичка, косметический ремонт'},
+ {n:2,t:'Стандарт',b:'Комфорт',d:'Минимум плюс то, что делает квартиру удобной: подсветка, проходные выключатели, запас розеток, сеть и резерв на будущее.',inc:['Всё из «Минимума»','Подсветка, ночной свет, проходные выключатели','Кабель-каналы, гофры, Wi-Fi точки, защита от протечек','Умный дом: контроллер и реле в щите'],fit:'Квартира или дом с капитальным ремонтом'},
+ {n:3,t:'Максимум',b:'Премиум',d:'Стандарт плюс всё, что повышает класс объекта: электрокарнизы, проектор, встроенная акустика, KNX и DALI.',inc:['Всё из «Стандарта»','Электрокарнизы, проектор, мультирум, электрокамин','Скрытые зарядки, лючки в полу, подъёмные столы','Умный дом: шина KNX, светильники DALI'],fit:'Премиальная квартира, дом, офис'}
+];
+function curLevel(){const p=curP();return p.level||p.smartLevel||2}
+function smartLevel(){return curLevel()}
+function visItems(r){const L=curLevel();return r.items.filter(i=>!i.lv||i.lv.includes(L))}
+function levelSwitch(){const L=curLevel();return `<div class="seg" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button role="radio" aria-checked="${l.n===L}" class="${l.n===L?'on':''}" data-lv="${l.n}">${l.t}</button>`).join('')}</div>`}
+function renderStart(){
+  const L=curLevel();
+  const cnt=n=>ALL.filter(i=>i.lv.includes(n)).length;
+  $('#main').innerHTML=`<div class="start"><p class="eyebrow">Шаг 1 из 3</p><h2>Выберите уровень оснащения</h2><p class="startlead">От уровня зависит, какие пункты появятся в чек-листе, на развёртках и в выгрузке. Его можно поменять в любой момент переключателем вверху — отметки сохранятся.</p>
+  <div class="levels big" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button class="lvcard${l.n===L?' on':''}" role="radio" aria-checked="${l.n===L}" data-lv="${l.n}" data-go="1"><span class="lvdots">${[1,2,3].map(i=>`<i class="${i<=l.n?'f':''}"></i>`).join('')}</span><span class="lvt">${l.t}</span><span class="lvs">Бюджет: ${l.b}</span><span class="lvd">${l.d}</span><ul class="lvinc">${l.inc.map(x=>`<li>${x}</li>`).join('')}</ul><span class="lvk"><span>Подходит</span><b>${l.fit}</b></span><span class="lvn">${cnt(l.n)} пунктов</span></button>`).join('')}</div>
+  <div class="startgo"><a class="btn primary" href="#general">Перейти к чек-листу — ${LEVELS[L-1].t.toLowerCase()}</a><span class="msg">Шаг 2: пройдите помещения по порядку слева. Шаг 3: «Нагрузка» и однолинейная схема щита в конце.</span></div></div>`;
+}
+/* ---- architecture schemes ---- */
+function node(x,y,w,h,t,sub,cls){return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" class="${cls||'nd'}"/><text x="${x+w/2}" y="${y+(sub?h/2-3:h/2+5)}" text-anchor="middle" class="nt">${t}</text>${sub?`<text x="${x+w/2}" y="${y+h/2+14}" text-anchor="middle" class="ns">${sub}</text>`:''}</g>`}
+function radio(x1,y1,x2,y2){return `<path d="M${x1} ${y1} L${x2} ${y2}" class="ln-radio"/>`}
+function archSvg(L){
+  let g='';const W=800;
+  const legend=(items)=>`<g transform="translate(20,${H-20})">${items.map((it,i)=>`<g transform="translate(${i*190},0)"><path d="M0 0 H34" class="${it[0]}"/><text x="42" y="4" class="ns" text-anchor="start">${it[1]}</text></g>`).join('')}</g>`;
+  var H;
+  if(L===1){H=380;
+    g+=node(300,30,200,56,'Смартфон, колонка','голос и приложение','nd acc2');
+    g+=node(300,150,200,64,'Хаб Zigbee / Thread','или колонка-хаб','nd acc');
+    g+=`<path d="M400 86 V150" class="ln-net"/>`;
+    g+=node(560,150,200,56,'Wi-Fi роутер','в центре квартиры');g+=`<path d="M500 182 H560" class="ln-net"/>`;
+    const dv=[[30,270,'Датчики протечки','на батарейках'],[220,270,'Движение, двери','на батарейках'],[410,270,'Умные лампы и реле','за выключателем'],[600,270,'Розетки, шторы','привод с аккумулятором']];
+    dv.forEach(([x,y,t,s])=>{g+=node(x,y,170,56,t,s);g+=radio(x+85,y,400,214)});
+    g+=node(30,150,200,56,'Краны протечки','модуль + ИБП','nd warn');g+=radio(230,178,300,182);
+    g+=legend([['ln-net','сеть / интернет'],['ln-radio','радиосвязь']]);
+  }else if(L===2){H=440;
+    g+=`<rect x="300" y="90" width="200" height="290" rx="12" class="nd acc"/><text x="400" y="118" text-anchor="middle" class="nt">Щит автоматизации</text>`;
+    [['Контроллер','логика сценариев',150],['Реле и диммеры','по одному на группу',210],['Блоки питания','12 / 24 В',270],['ИБП','роутер, контроллер',330]].forEach(([t,s,y])=>{g+=node(318,y-22,164,48,t,s,'nd in')});
+    g+=node(300,20,200,48,'Приложение, голос','через Wi-Fi роутер','nd acc2');g+=`<path d="M400 68 V90" class="ln-net"/>`;
+    const L1=[['Свет','каждая группа — своя линия',110],['Шторы','220 В у карниза',190],['Краны протечки','электропривод',270],['Тёплый пол','реле / терморегулятор',350]];
+    L1.forEach(([t,s,y])=>{g+=node(20,y-26,210,52,t,s);g+=`<path d="M230 ${y} H300" class="ln-pow"/>`});
+    const R1=[['Кнопки на стенах','слаботочный кабель',110],['Датчики протечки','проводные',190],['Движение, CO₂','кабель или радио',270],['Wi-Fi, камеры','Cat6, PoE',350]];
+    R1.forEach(([t,s,y],i)=>{g+=node(570,y-26,210,52,t,s);g+=`<path d="M500 ${y} H570" class="${i===2?'ln-radio':i===3?'ln-net':'ln-low'}"/>`});
+    g+=legend([['ln-pow','силовые 220 В'],['ln-low','слаботочные'],['ln-net','сеть Cat6'],['ln-radio','радио']]);
+  }else{H=470;
+    g+=node(300,20,200,48,'Приложение, голос','IP-шлюз KNX','nd acc2');
+    g+=`<rect x="290" y="96" width="220" height="190" rx="12" class="nd acc"/><text x="400" y="122" text-anchor="middle" class="nt">Щит KNX</text>`;
+    [['Блок питания шины',156],['Актуаторы света и штор',204],['Шлюз DALI · ИБП',252]].forEach(([t,y])=>{g+=node(306,y-20,188,40,t,'','nd in')});
+    g+=`<path d="M400 68 V96" class="ln-net"/>`;
+    const L1=[['Свет DALI','плавное диммирование',130],['Шторы','привод 220 В',200],['Краны, тёплый пол','силовые линии',270]];
+    L1.forEach(([t,s,y])=>{g+=node(20,y-26,200,52,t,s);g+=`<path d="M220 ${y} H290" class="ln-pow"/>`});
+    g+=node(580,104,200,52,'Мультирум','усилитель → зоны');g+=`<path d="M510 130 H580" class="ln-low"/>`;
+    g+=node(580,184,200,52,'Wi-Fi, камеры','Cat6, PoE');g+=`<path d="M510 210 H580" class="ln-net"/>`;
+    g+=`<path d="M400 286 V330 M60 330 H740" class="ln-bus"/><text x="750" y="334" class="ns" text-anchor="start">шина</text>`;
+    const B=[['Кнопки',50],['Движение',192],['Термостаты',334],['CO₂, влажность',476],['Метеостанция',618]];
+    B.forEach(([t,x])=>{g+=`<path d="M${x+66} 330 V352" class="ln-bus"/>`+node(x,352,132,48,t,'')});
+    g+=legend([['ln-pow','силовые 220 В'],['ln-bus','шина KNX'],['ln-net','сеть Cat6'],['ln-low','аудио']]);
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" class="scheme" role="img" aria-label="Схема системы умного дома, уровень ${L}">${g}</svg>`;
+}
+/* ---- apartment plan ---- */
+function planSvg(L){
+  const rooms=[[20,20,240,190,'Спальня'],[270,20,300,190,'Гостиная'],[580,20,200,190,'Кухня'],[20,220,240,180,'Детская'],[270,220,190,180,'Прихожая'],[470,220,140,180,'Ванная'],[620,220,160,180,'Гардероб']];
+  const D=[
+   ['ap',420,70,[1,2,3]],['ap',140,300,[2,3]],
+   ['hub',330,270,[1]],['panel',320,330,[2,3]],
+   ['leak',540,370,[1,2,3]],['leak',720,180,[1,2,3]],['leak',500,300,[1,2,3]],
+   ['valve',590,360,[1,2,3]],
+   ['smoke',140,60,[1,2,3]],['smoke',400,270,[1,2,3]],['smoke',150,250,[1,2,3]],['gas',740,60,[1,2,3]],
+   ['motion',430,370,[1,2,3]],['motion',590,250,[1,2,3]],['motion',700,370,[1,2,3]],
+   ['co2',200,180,[2,3]],['co2',200,380,[2,3]],
+   ['curt',30,110,[1,2,3]],['curt',280,110,[1,2,3]],
+   ['thermo',530,250,[1,2,3]],['thermo',240,60,[2,3]],
+   ['btn',250,170,[2,3]],['btn',440,200,[2,3]],['btn',600,180,[2,3]],
+   ['spk',330,60,[3]],['spk',510,60,[3]],['spk',80,170,[3]],
+   ['door',410,390,[1,2,3]]
+  ];
+  const ico={
+   ap:(x,y)=>`<g class="i-net"><circle cx="${x}" cy="${y+6}" r="2.5"/><path d="M${x-7} ${y} a10 10 0 0 1 14 0 M${x-12} ${y-5} a17 17 0 0 1 24 0" fill="none"/></g>`,
+   hub:(x,y)=>`<g class="i-acc"><path d="M${x-12} ${y} l6 -10 h12 l6 10 l-6 10 h-12z"/></g>`,
+   panel:(x,y)=>`<g class="i-acc"><rect x="${x-14}" y="${y-11}" width="28" height="22" rx="3"/><path d="M${x-7} ${y-4} v8 M${x} ${y-4} v8 M${x+7} ${y-4} v8"/></g>`,
+   leak:(x,y)=>`<g class="i-warn"><path d="M${x} ${y-11} C${x+8} ${y-1} ${x+8} ${y+8} ${x} ${y+8} C${x-8} ${y+8} ${x-8} ${y-1} ${x} ${y-11}z"/></g>`,
+   valve:(x,y)=>`<g class="i-warn"><path d="M${x-11} ${y-8} L${x+11} ${y+8} V${y-8} L${x-11} ${y+8}z"/></g>`,
+   smoke:(x,y)=>`<g class="i-crit"><circle cx="${x}" cy="${y}" r="9"/><circle cx="${x}" cy="${y}" r="3"/></g>`,
+   gas:(x,y)=>`<g class="i-crit"><circle cx="${x}" cy="${y}" r="10"/><text x="${x}" y="${y+4}" text-anchor="middle" class="it">газ</text></g>`,
+   motion:(x,y)=>`<g class="i-ink"><circle cx="${x}" cy="${y}" r="3"/><path d="M${x+6} ${y-6} a9 9 0 0 1 0 12 M${x+11} ${y-10} a15 15 0 0 1 0 20" fill="none"/></g>`,
+   co2:(x,y)=>`<g class="i-ink"><rect x="${x-15}" y="${y-9}" width="30" height="18" rx="5"/><text x="${x}" y="${y+4}" text-anchor="middle" class="it">CO₂</text></g>`,
+   curt:(x,y)=>`<g class="i-ink"><path d="M${x} ${y-30} q6 7.5 0 15 q-6 7.5 0 15 q6 7.5 0 15 q-6 7.5 0 15" fill="none"/></g>`,
+   thermo:(x,y)=>`<g class="i-ink"><rect x="${x-10}" y="${y-10}" width="20" height="20" rx="4"/><text x="${x}" y="${y+4}" text-anchor="middle" class="it">t°</text></g>`,
+   btn:(x,y)=>`<g class="i-ink"><rect x="${x-8}" y="${y-8}" width="16" height="16" rx="3"/><circle cx="${x}" cy="${y}" r="2.5"/></g>`,
+   spk:(x,y)=>`<g class="i-ink"><circle cx="${x}" cy="${y}" r="9"/><circle cx="${x}" cy="${y}" r="4.5"/></g>`,
+   door:(x,y)=>`<g class="i-ink"><rect x="${x-7}" y="${y-10}" width="14" height="20" rx="2"/><circle cx="${x+3}" cy="${y}" r="1.5"/></g>`
+  };
+  const names={ap:'точка Wi-Fi',hub:'хаб',panel:'щит автоматизации',leak:'датчик протечки',valve:'краны с приводом',smoke:'датчик дыма',gas:'датчик газа',motion:'датчик движения',co2:'датчик CO₂',curt:'привод штор',thermo:'терморегулятор',btn:'кнопка / панель',spk:'встроенная акустика',door:'датчик двери'};
+  let g='';
+  rooms.forEach(([x,y,w,h,t])=>{g+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" class="room"/><text x="${x+10}" y="${y+h-10}" class="rn">${t}</text>`});
+  const used=new Set();
+  D.forEach(([k,x,y,lv])=>{if(lv.includes(L)){g+=ico[k](x,y);used.add(k)}});
+  const leg=[...used];let lg='';
+  leg.forEach((k,i)=>{const cx=30+(i%4)*190,cy=432+Math.floor(i/4)*30;lg+=ico[k](cx,cy)+`<text x="${cx+22}" y="${cy+4}" class="ns" text-anchor="start">${names[k]}</text>`});
+  const H=432+Math.ceil(leg.length/4)*30;
+  return `<svg viewBox="0 0 800 ${H}" class="scheme plan" role="img" aria-label="Где ставить устройства умного дома, уровень ${L}">${g}${lg}</svg>`;
+}
+
+/* ---------------- ONE-LINE DIAGRAM ---------------- */
+const STD_A=[6,10,16,20,25,32,40,50,63,80,100,125];
+const pickA=i=>STD_A.find(a=>a>=i)||125;
+const cableFor=a=>a<=10?'3×1,5':a<=16?'3×2,5':a<=20?'3×2,5':a<=25?'3×4':a<=32?'3×6':a<=40?'3×10':'3×16';
+const ROOMDEF={bed:1,kids:1,bath:1,wc:0,office:0,balcony:1};
+function schemeRooms(p){p.rooms=Object.assign({},ROOMDEF,p.rooms||{});return p.rooms}
+function buildScheme(p){
+  const L=curLevel();const R=schemeRooms(p);const c=p.calc||{};const q=id=>+c[id]||0;const kwOf=id=>(APPLIANCES.find(a=>a.id===id)||{kw:0}).kw;
+  const G=[];
+  const add=(name,kw,opt={})=>{const I=kw*1000/(230*0.95);let a=opt.a||Math.max(opt.min||10,pickA(I*1.1));G.push({name,kw:+kw.toFixed(2),I:+I.toFixed(1),a,ch:opt.ch||'C',rcd:opt.rcd??30,cable:opt.cable||cableFor(a),kind:opt.kind||'s',res:!!opt.res})};
+  // lighting
+  const lights=L===1?[['Освещение: прихожая, кухня, гостиная',0.5],['Освещение: спальни, детская, санузлы',0.4]]
+   :L===2?[['Освещение: прихожая, коридор, кухня',0.4],['Освещение: гостиная',0.4],['Освещение: спальни, детская',0.4],['Освещение: санузлы',0.2]]
+   :[['Освещение: прихожая, коридор',0.3],['Освещение: кухня',0.3],['Освещение: гостиная',0.4],['Освещение: спальни, детская',0.4],['Освещение: санузлы',0.2],['Подсветка, ленты (БП 24 В)',0.3]];
+  lights.forEach(([n,k])=>add(n,k,{a:10,ch:'B',rcd:/санузл/.test(n)?30:0,kind:'l'}));
+  // sockets
+  add('Розетки: кухня, фартук',2.5,{a:16,kind:'s'});
+  if(L>=2)add('Розетки: холодильник, СВЧ, вытяжка',1.5,{a:16});
+  if(L===1){add('Розетки: прихожая, гостиная',1.8,{a:16});add('Розетки: спальни, детская, кабинет',1.8,{a:16})}
+  else{add('Розетки: прихожая, коридор',1.2,{a:16});add('Розетки: гостиная, ТВ-зона',1.8,{a:16});
+    for(let i=1;i<=R.bed;i++)add(`Розетки: спальня ${R.bed>1?i:''}`.trim(),1.5,{a:16});
+    for(let i=1;i<=R.kids;i++)add(`Розетки: детская ${R.kids>1?i:''}`.trim(),1.5,{a:16});
+    if(R.office)add('Розетки: кабинет',1.5,{a:16})}
+  for(let i=1;i<=R.bath;i++)add(`Розетки: ванная ${R.bath>1?i:''}`.trim(),2.0,{a:16,rcd:L===3?10:30});
+  for(let i=1;i<=R.wc;i++)add(`Розетки: санузел ${R.wc>1?i:''}`.trim(),0.8,{a:16});
+  if(R.balcony&&L>=2)add('Розетки: балкон (IP44)',1.0,{a:16});
+  // power lines from load calc
+  if(q('hob'))add('Варочная панель (Кс 0,8)',kwOf('hob')*0.8,{kind:'p',a:32});
+  if(q('oven'))add('Духовой шкаф',kwOf('oven'),{kind:'p',a:16});
+  if(q('dw'))add('Посудомоечная машина',kwOf('dw'),{kind:'p',a:16});
+  if(q('wm'))add('Стиральная машина',kwOf('wm'),{kind:'p',a:16});
+  if(q('dryer'))add('Сушильная машина',kwOf('dryer'),{kind:'p',a:16});
+  if(q('boiler'))add('Бойлер',kwOf('boiler'),{kind:'p',a:16});
+  for(let i=1;i<=q('floor');i++)add(`Тёплый пол ${q('floor')>1?i:''}`.trim(),kwOf('floor'),{kind:'p',a:16});
+  for(let i=1;i<=q('ac');i++)add(`Кондиционер ${q('ac')>1?i:''}`.trim(),kwOf('ac'),{kind:'p',a:16,rcd:0});
+  // low-current / smart
+  add('Слаботочный щит, роутер',0.2,{a:10,ch:'C',kind:'n'});
+  if(L>=2){add('Контроллер умного дома, БП',0.15,{a:6,rcd:0,kind:'n'});add('Защита от протечек (через ИБП)',0.05,{a:6,rcd:0,kind:'n'})}
+  else add('Модуль защиты от протечек',0.05,{a:6,rcd:0,kind:'n'});
+  if(L===3){add('Питание шины KNX',0.05,{a:6,rcd:0,kind:'n'});add('Шлюз DALI',0.05,{a:6,rcd:0,kind:'n'})}
+  const nres=[2,3,4][L-1];for(let i=0;i<nres;i++)G.push({name:'Резерв',kw:0,I:0,a:16,ch:'C',rcd:0,cable:'—',kind:'r',res:true});
+  // input
+  const lim=+p.limit||15;const three=lim>15;
+  const Iin=three?lim*1000/(Math.sqrt(3)*400*0.95):lim*1000/(230*0.95);
+  const ain=pickA(Iin);
+  // phases
+  if(three){const ph=[0,0,0];G.filter(g=>!g.res).sort((a,b)=>b.kw-a.kw).forEach(g=>{const k=ph.indexOf(Math.min(...ph));ph[k]+=g.kw;g.ph='L'+(k+1)});G.filter(g=>g.res).forEach((g,i)=>g.ph='L'+(i%3+1));}
+  else G.forEach(g=>g.ph='L');
+  // codes
+  let nQF=0,nQFD=0;G.forEach(g=>{if(g.rcd){g.code='QFD'+(++nQFD)}else g.code='QF'+(++nQF)});
+  // modules
+  const mod=G.reduce((s,g)=>s+(g.rcd?2:1),0)+(three?4:2)+(L>=2?(three?4:2):0)+(L>=2?(three?4:3):0)+(three?4:2);
+  const need=Math.ceil(mod*1.25);const box=[24,36,48,54,72,96].find(b=>b>=need)||96;
+  const inst=G.reduce((s,g)=>s+g.kw,0);
+  return {G,lim,three,ain,Iin,mod,box,inst,L};
+}
+function schemeSvg(S0,p){
+  const {G,three,ain,L}=S0;
+  const colW=62,x0=300,top=40,bus=96,brk=146,tTop=236;
+  const rowsH=[24,24,24,24,24,24,24,236];
+  const rowNames=['Обозначение','Аппарат','Ток утечки','Кабель ВВГнг(А)-LS','P, кВт','I расч., А','Фаза','Потребитель'];
+  const W=x0+G.length*colW+30;const tBot=tTop+rowsH.reduce((a,b)=>a+b,0);const H=tBot+110;
+  let g='';
+  const T=(x,y,t,o={})=>`<text x="${x}" y="${y}" ${o.a?`text-anchor="${o.a}"`:''} class="${o.c||'st'}"${o.r?` transform="rotate(-90 ${x} ${y})"`:''}>${esc(t)}</text>`;
+  const breaker=(x,y,lab)=>`<path d="M${x} ${y} v10 M${x} ${y+32} v10 M${x} ${y+10} l14 -4" class="sw"/><path d="M${x-4} ${y+6} l8 8 M${x+4} ${y+6} l-8 8" class="sw thin"/><line x1="${x}" y1="${y+32}" x2="${x}" y2="${y+28}" class="sw"/>`;
+  // input chain (horizontal) at bus level
+  const yIn=bus;
+  g+=T(20,yIn-34,three?'Ввод 3~ 380 В':'Ввод ~230 В',{c:'sth'})+T(20,yIn-18,'от этажного щита',{c:'sts'});
+  g+=`<path d="M20 ${yIn} H300" class="busl"/>`;
+  // QS
+  const blk=(x,lab,sub)=>`<rect x="${x-18}" y="${yIn-16}" width="36" height="32" class="dev"/><text x="${x}" y="${yIn+4}" text-anchor="middle" class="stb">${lab}</text><text x="${x}" y="${yIn+32}" text-anchor="middle" class="sts">${sub}</text>`;
+  g+=blk(70,'QS','');g+=T(70,yIn+44,`${ain} А`,{a:'middle',c:'sts'});
+  g+=blk(120,'Wh','счётчик');
+  let xi=170;
+  if(L>=2){g+=`<path d="M${xi} ${yIn} V${yIn+40}" class="sw"/><rect x="${xi-12}" y="${yIn+40}" width="24" height="30" class="dev"/><text x="${xi}" y="${yIn+60}" text-anchor="middle" class="stb">FV</text><path d="M${xi} ${yIn+70} v10 M${xi-10} ${yIn+80} h20 M${xi-6} ${yIn+85} h12 M${xi-2} ${yIn+90} h4" class="sw"/>${T(xi+16,yIn+58,'УЗИП',{c:'sts'})}`;xi+=50;
+    g+=blk(xi,'KV','реле напр.');xi+=50}
+  g+=blk(Math.max(xi,250),'QD','100 мА');
+  // bus
+  g+=`<path d="M${x0-20} ${bus} H${W-20}" class="busl"/>`+T(x0+6,bus-10,three?'L1, L2, L3, N, PE':'L, N, PE',{c:'sts'});
+  // columns
+  G.forEach((gr,i)=>{const x=x0+i*colW+colW/2;
+    g+=`<path d="M${x} ${bus} V${brk-10}" class="sw${gr.res?' dash':''}"/>`;
+    // breaker symbol
+    g+=`<g class="${gr.res?'resg':''}"><path d="M${x} ${brk-10} V${brk}" class="sw"/><path d="M${x} ${brk} l12 -18" class="sw"/><path d="M${x-4} ${brk-4} l8 8 M${x+4} ${brk-4} l-8 8" class="sw thin"/><path d="M${x} ${brk+4} V${tTop}" class="sw${gr.res?' dash':''}"/>`;
+    if(gr.rcd)g+=`<rect x="${x+6}" y="${brk+14}" width="22" height="18" class="dev rcd"/><text x="${x+17}" y="${brk+27}" text-anchor="middle" class="sts">ΔI</text>`;
+    g+=`<path d="M${x-6} ${tTop-14} l6 10 l6 -10" class="sw thin"/></g>`;
+    // table cells
+    const vals=[gr.code,gr.res?'—':`${gr.ch}${gr.a}`,gr.rcd?`${gr.rcd} мА`:'—',gr.cable,gr.res?'—':gr.kw.toFixed(2),gr.res?'—':gr.I.toFixed(1),gr.ph];
+    let y=tTop;vals.forEach((v,k)=>{g+=T(x,y+16,v,{a:'middle',c:k===0?'stb':'st'});y+=rowsH[k]});
+    g+=T(x+4,tBot-8,gr.name,{r:1,c:gr.res?'sts':'st'});
+  });
+  // grid
+  let y=tTop;g+=`<line x1="20" x2="${W-20}" y1="${y}" y2="${y}" class="grid"/>`;
+  rowNames.forEach((n,k)=>{g+=T(28,y+(k===7?24:16),n,{c:'sth2'});y+=rowsH[k];g+=`<line x1="20" x2="${W-20}" y1="${y}" y2="${y}" class="grid"/>`});
+  g+=`<line x1="20" x2="20" y1="${tTop}" y2="${tBot}" class="grid"/><line x1="${x0}" x2="${x0}" y1="${tTop}" y2="${tBot}" class="grid"/>`;
+  G.forEach((gr,i)=>{const xx=x0+(i+1)*colW;g+=`<line x1="${xx}" x2="${xx}" y1="${tTop}" y2="${tBot}" class="gridl"/>`});
+  // title block
+  const bw=420,bx=Math.max(20,W-20-bw),by=tBot+16;
+  const d=new Date();const ds=d.toLocaleDateString('ru-RU');
+  g+=`<rect x="${bx}" y="${by}" width="${bw}" height="78" class="stamp"/><line x1="${bx}" x2="${bx+bw}" y1="${by+26}" y2="${by+26}" class="grid"/><line x1="${bx+300}" x2="${bx+300}" y1="${by}" y2="${by+78}" class="grid"/>`;
+  g+=T(bx+10,by+18,'Однолинейная схема щита ЩК (эскиз)',{c:'sth'})+T(bx+310,by+18,'büro42',{c:'sth'});
+  g+=T(bx+10,by+44,`Проект: ${p.name}`.slice(0,48),{c:'st'})+T(bx+10,by+64,`Уровень: ${LEVELS[L-1].t} · ${ds}`,{c:'sts'});
+  g+=T(bx+310,by+44,'Стадия: эскиз',{c:'sts'})+T(bx+310,by+64,'Не для монтажа',{c:'sts'});
+  g+=T(20,by+18,'QF — автоматический выключатель · QFD — АВДТ (дифавтомат) · QD — УЗО · QS — выключатель нагрузки',{c:'sts'});
+  g+=T(20,by+36,'Wh — счётчик · FV — УЗИП · KV — реле напряжения · ΔI — защита от тока утечки',{c:'sts'});
+  return {svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="ols" font-family="Arial, sans-serif">${g}</svg>`,W,H};
+}
+const OLS_CSS=`.ols{background:#fff}.ols .st{font-size:11px;fill:#23251A}.ols .stb{font-size:11px;font-weight:700;fill:#23251A}.ols .sts{font-size:10px;fill:#66695A}.ols .sth{font-size:12px;font-weight:700;fill:#23251A}.ols .sth2{font-size:10.5px;fill:#23251A}.ols .sw{stroke:#23251A;stroke-width:1.4;fill:none}.ols .sw.thin{stroke-width:1}.ols .dash{stroke-dasharray:4 3}.ols .busl{stroke:#23251A;stroke-width:3;fill:none}.ols .dev{fill:#fff;stroke:#23251A;stroke-width:1.2}.ols .rcd{stroke:#D9534F}.ols .grid{stroke:#23251A;stroke-width:1}.ols .gridl{stroke:#B9BCAD;stroke-width:.8}.ols .stamp{fill:none;stroke:#23251A;stroke-width:1.4}.ols .resg{opacity:.55}`;
+function renderScheme(){
+  const p=curP();const R=schemeRooms(p);const S0=buildScheme(p);const {svg}=schemeSvg(S0,p);
+  const real=S0.G.filter(g=>!g.res);
+  const cntBy=(f)=>{const m={};real.filter(f).forEach(g=>{const k=`${g.ch}${g.a}`+(g.rcd?` ${g.rcd} мА`:'');m[k]=(m[k]||0)+1});return Object.entries(m).map(([k,v])=>`${v} × ${k}`).join(', ')||'—'};
+  const est=S0.inst*(S0.inst>14?0.45:S0.inst>8?0.55:0.65);
+  const num=(id,label,max)=>`<label class="rq"><span>${label}</span><input type="number" min="0" max="${max}" id="rm-${id}" data-rm="${id}" value="${R[id]}"></label>`;
+  $('#main').innerHTML=`<div class="room-head"><h2>Однолинейная схема</h2><div class="lead"><p>Эскиз щита по вашему выбору: уровень «${LEVELS[S0.L-1].t}», приборы из вкладки «Нагрузка» и состав квартиры ниже. Подходит для обсуждения с клиентом и электриком; рабочий проект щита выполняет специалист с допуском.</p></div></div>
+  <div class="panel" style="margin-top:0"><h4>Состав квартиры</h4><div class="rqs">${num('bed','Спален',4)}${num('kids','Детских',3)}${num('bath','Ванных',3)}${num('wc','Отдельных санузлов',3)}${num('office','Кабинет',1)}${num('balcony','Балкон / лоджия',2)}</div><p class="note">Приборы, отдельные линии и выделенная мощность берутся из вкладки <a href="#load">«Нагрузка»</a>.</p></div>
+  <div class="olsum">
+   <div><span>Ввод</span><b>${S0.three?'3 фазы, 380 В':'1 фаза, 230 В'}</b></div>
+   <div><span>Выделенная мощность</span><b>${S0.lim} кВт</b></div>
+   <div><span>Вводной аппарат</span><b>${S0.ain} А</b></div>
+   <div><span>Расчётная нагрузка</span><b>${est.toFixed(1)} кВт</b></div>
+   <div><span>Групп</span><b>${real.length} + ${S0.G.length-real.length} резерв</b></div>
+   <div><span>Щит</span><b>от ${S0.box} модулей</b></div>
+  </div>
+  <div class="olswrap">${svg}</div>
+  <div class="panel"><h4>Спецификация щита (предварительно)</h4><div class="tbl"><table><tbody>
+   <tr><td>Выключатель нагрузки QS</td><td class="n">1 × ${S0.ain} А${S0.three?' 4P':' 2P'}</td></tr>
+   <tr><td>УЗО противопожарное QD</td><td class="n">1 × ${S0.ain} А, 100 мА, тип S</td></tr>
+   ${S0.L>=2?`<tr><td>УЗИП FV, реле напряжения KV</td><td class="n">по 1 шт.</td></tr>`:''}
+   <tr><td>Автоматические выключатели QF</td><td class="n">${cntBy(g=>!g.rcd)}</td></tr>
+   <tr><td>Дифавтоматы QFD</td><td class="n">${cntBy(g=>g.rcd)}</td></tr>
+   <tr><td>Корпус щита</td><td class="n">${S0.box} модулей (занято ~${S0.mod}, запас 25%)</td></tr>
+  </tbody></table></div>
+  <p class="note">Номиналы подобраны по расчётному току с запасом, сечения — для меди при скрытой прокладке. Коэффициенты, селективность, падение напряжения и ток КЗ проверяет электрик по ПУЭ и СП 256. Мощность больше 15 кВт приложение считает трёхфазным вводом и распределяет группы по фазам.</p></div>
+  <div class="tools"><button class="btn primary" id="svgBtn">Скачать схему SVG</button><button class="btn" id="olsCsv">Таблица групп в CSV</button><span class="msg" id="toolMsg"></span></div>`;
+}
+async function dlSave(filename,data){const m=$('#toolMsg');let dl=null;try{dl=window.claude&&await claude.use('downloads')}catch(e){}
+  if(!dl){try{const b=data instanceof Blob?data:new Blob([data],{type:'application/octet-stream'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);m.textContent='Файл скачан'}catch(e){m.textContent='Сохранение файлов недоступно в этом окне.'}return}
+  try{await dl.save({filename,data});m.textContent='Файл сохранён'}catch(e){m.textContent=e&&e.code==='declined'?'Сохранение отменено':'Не удалось сохранить файл'}}
+function exportSvg(){const p=curP();const {svg}=schemeSvg(buildScheme(p),p);const full=svg.replace('<svg ','<svg ').replace('>',`><style>${OLS_CSS}</style><rect width="100%" height="100%" fill="#fff"/>`);dlSave(`Однолинейная схема — ${p.name}.svg`,full)}
+function exportOlsCsv(){const p=curP();const S0=buildScheme(p);const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[['Обозначение','Потребитель','Аппарат','Ток утечки','Кабель','P, кВт','I, А','Фаза'].map(q).join(';')];
+  S0.G.forEach(g=>rows.push([g.code,g.name,g.res?'':`${g.ch}${g.a}`,g.rcd?`${g.rcd} мА`:'',g.cable,g.res?'':g.kw,g.res?'':g.I,g.ph].map(q).join(';')));
+  dlSave(`Группы щита — ${p.name}.csv`,'﻿'+rows.join('\r\n'))}
+
+/* ---------------- RENDER ---------------- */
+function renderRail(){
+  const groups={};ROOMS.forEach(r=>(groups[r.grp]=groups[r.grp]||[]).push(r));
+  let h=`<h3>Начало</h3><a href="#start" class="${S.view==='start'?'on':''}"><span>Уровень оснащения</span><span class="cnt">${LEVELS[curLevel()-1].t}</span></a>`;
+  for(const [g,rs] of Object.entries(groups)){
+    h+=`<h3>${esc(g)}</h3>`;
+    for(const r of rs){const st=roomStats(r);h+=`<a href="#${r.id}" class="${S.view===r.id?'on':''}"><span>${esc(r.name)}</span><span class="cnt">${st.d}/${st.n}</span><span class="bar"><i style="width:${st.n?st.d/st.n*100:0}%"></i></span></a>`}
+  }
+  h+=`<h3>Инструменты</h3><a href="#heights" class="${S.view==='heights'?'on':''}"><span>Шкала высот</span><span class="cnt"></span></a><a href="#load" class="${S.view==='load'?'on':''}"><span>Нагрузка</span><span class="cnt"></span></a><h3>Итог</h3><a href="#scheme" class="${S.view==='scheme'?'on':''}"><span>Однолинейная схема</span><span class="cnt">бонус</span></a>`;
+  $('#rail').innerHTML=h;
+}
+function renderTotal(){
+  const p=curP();const vis=ROOMS.flatMap(visItems);const d=vis.filter(i=>p.checks[i.id]).length;
+  $('#ring').setAttribute('stroke-dasharray',`${d/vis.length*100} 100`);
+  $('#totalNum').textContent=`${d}/${vis.length}`;
+}
+function renderProj(){
+  const sel=$('#projSel');
+  sel.innerHTML=S.projects.map(p=>`<option value="${esc(p.id)}"${p.id===S.cur?' selected':''}>${esc(p.name)}</option>`).join('')+'<option value="__new">+ Новый проект…</option>';
+  const a=$('#projActions');
+  if(S.newMode){a.innerHTML=`<span class="confirm"><input type="text" id="newName" placeholder="Название, например «Квартира на Ленина»" aria-label="Название проекта" style="width:min(260px,60vw)"><button class="btn primary small" id="newOk">Создать</button><button class="btn small" id="newNo">Отмена</button></span>`;setTimeout(()=>{const i=$('#newName');i&&i.focus()},0)}
+  else if(S.delMode){a.innerHTML=`<span class="confirm">Удалить «${esc(curP().name)}»?<button class="btn danger small" id="delOk">Удалить</button><button class="btn small" id="delNo">Нет</button></span>`}
+  else a.innerHTML=S.projects.length>1?`<button class="btn small" id="delBtn" title="Удалить проект">Удалить</button>`:'';
+}
+function itemHTML(it,idx,showNum){
+  const p=curP();const done=!!p.checks[it.id];
+  const tags=[];
+  if(it.h!=null)tags.push(`<span class="tag h">${it.h} см</span>`);
+  if(it.q)tags.push(`<span class="tag">${it.q} шт.</span>`);
+  tags.push(`<span class="tag">${kindIcon(it.k,12)} ${KIND[it.k]}</span>`);
+  if(it.m)tags.push(`<span class="tag must">обязательно</span>`);
+  tags.push(`<span class="tag src">${SRC[it.s]}</span>`);
+  const num=showNum&&it.p?`<b style="color:var(--coral);font-family:var(--f-mono);font-weight:500;margin-right:6px">${idx+1}</b>`:'';
+  return `<li class="it${done?' done':''}" data-item="${it.id}"><button class="cb" data-tg="${it.id}" role="checkbox" aria-checked="${done}" aria-label="Отметить: ${esc(it.t)}"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3L11.5 4" fill="none" stroke="var(--olive-ink)" stroke-width="2"/></svg></button><div class="txt">${num}${esc(it.t)}${it.e?` <button class="info" data-info="${it.id}" aria-expanded="${!!S.open[it.id]}" aria-label="Пояснение" title="Пояснение">i</button>`:''}</div><div class="meta">${tags.join('')}</div>${it.e?`<div class="expl"${S.open[it.id]?'':' hidden'} id="ex-${it.id}">${esc(it.e)}</div>`:''}</li>`;
+}
+function tableHTML(kind){
+  if(kind==='layers')return `<div class="panel"><h4>Слои света по комнатам</h4><div class="tbl"><table><thead><tr><th>Комната</th><th>Общий</th><th>Рабочий</th><th>Акцент / ночной</th><th>Цвет. темп.</th></tr></thead><tbody>
+  ${[['Прихожая','Споты / трек','Зеркало','Подсветка пола по датчику','3000 K'],['Кухня','Споты / линии','Под верхними шкафами','Подвесы над столом','3000–4000 K'],['Гостиная','Люстра / трек','Торшер для чтения','Карниз, ниши, картины','2700–3000 K'],['Спальня','Потолочный','Бра или подвесы у кровати','Подсветка под кроватью','2700 K'],['Детская','Потолочный','Настольная лампа','Ночник','3000 / 4000 K'],['Ванная','Споты IP44+','Зеркало','Ниши, пол','3000–4000 K'],['Кабинет','Потолочный','Настольная, 300–500 лк','Стеллаж','4000 K']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="n">${r[4]}</td></tr>`).join('')}</tbody></table></div></div>`;
+
+  if(kind==='smart'){const L=smartLevel();const lv=LEVELS[L-1];return `<div class="panel"><h4>Как устроена система · ${['беспроводной умный дом','контроллер и реле в щите','шина KNX'][L-1]}</h4><div class="tbl">${archSvg(L)}</div><p class="note">${['Датчики и лампы связываются с хабом по радио, хаб — с телефоном через Wi-Fi. Проводов почти не нужно, но всё зависит от качества связи.','Свет, шторы и краны идут отдельными линиями к реле в щите. Кнопки и датчики подключены к контроллеру слаботочным кабелем, часть датчиков может быть беспроводной.','Все кнопки и датчики висят на одной шине KNX. Нагрузками управляют актуаторы в щите, светильники — по DALI. Система работает без центрального сервера.'][L-1]}</p></div>
+  <div class="panel"><h4>Где ставить устройства · пример квартиры</h4><div class="tbl">${planSvg(L)}</div><p class="note">Схема показывает только устройства выбранного уровня. Переключите уровень вверху, чтобы сравнить.</p></div>
+  <div class="panel"><h4>Нормы и стандарты</h4><div class="tbl"><table><thead><tr><th>Документ</th><th>Что регулирует</th><th>Статус</th></tr></thead><tbody>
+  ${[['ГОСТ Р 70300-2022','Кабели управления оборудованием умного дома: разделение с силовыми, маркировка, кабельный журнал','РФ, с 01.01.2023'],['ГОСТ Р 71870-2024','Требования к устройствам умного дома: структура, интерфейсы, совместимость','РФ, с 01.02.2025'],['ГОСТ Р 71868-2024','Классы умных многоквартирных домов и порядок оценки','РФ, с 01.02.2025'],['ГОСТ Р 71872-2024','Многоабонентский домофон с сетевым интерфейсом','РФ, с 01.02.2025'],['ПУЭ-7, СП 256.1325800','Электробезопасность: УЗО, группы, сечения — действуют и для умного дома','РФ, обязательны'],['ISO/IEC 14543-3, EN 50090','Шина KNX: устройства, кабель, монтаж','Международный стандарт'],['Matter (CSA)','Совместимость устройств разных брендов и экосистем','Отраслевой стандарт'],['DIN 18015-2, RAL-RG 678','Уровни оснащения квартиры; уровни «Plus» предусматривают автоматизацию здания','Германия, рекомендательные']].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div><p class="note">Российские ГОСТы по умному дому добровольные: обязательны для госзаказа, для частного ремонта служат ориентиром. Требования электробезопасности ПУЭ и СП 256 действуют всегда.</p></div>`}
+  if(kind==='lux')return `<div class="panel"><h4>Освещённость — ориентиры</h4><div class="tbl"><table><thead><tr><th>Помещение</th><th>лк</th><th>Особенности</th></tr></thead><tbody>
+  ${[['Офис, open space','300–500','300 по СП 52, 500 по EN 12464-1'],['Переговорная','300–500','Диммер для видеосвязи'],['Кафе, ресторан (зал)','100–200','Сцены день / вечер'],['Кухня кафе','300–500','IP44+'],['Магазин, торговый зал','300–500','+ акцент на товар'],['Салон красоты','500','CRI ≥ 90 на рабочем месте'],['Кабинет врача','500','По техзаданию оборудования'],['Пути эвакуации','≥ 1','На полу по оси пути']].map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div><p class="note">Точную норму для своего типа помещения берите из таблиц СП 52.13330 и подтверждайте светотехническим расчётом (DIALux).</p></div>`;
+  return '';
+}
+function renderRoom(r){
+  const p=curP();
+  let its=visItems(r).map((it)=>({it,i:r.items.indexOf(it)}));
+  if(S.filter==='must')its=its.filter(o=>o.it.m);
+  if(S.filter==='open')its=its.filter(o=>!p.checks[o.it.id]);
+  const st=roomStats(r);
+  let list='';let lastG=null;
+  // groups: an item's g starts a group that continues until next g
+  let curG=null;const gOf={};r.items.forEach(it=>{if(it.g)curG=it.g;gOf[it.id]=curG});
+  for(const o of its){const g=gOf[o.it.id];if(g&&g!==lastG){list+=`<li class="grp">${esc(g)}</li>`;lastG=g}list+=itemHTML(o.it,o.i,!!r.wall)}
+  if(!its.length)list=`<li class="empty">${S.filter==='open'?'Все пункты отмечены — помещение готово.':'Нет пунктов по этому фильтру.'}</li>`;
+  const filt=`<div class="filters" role="group" aria-label="Фильтр">${[['all','Все'],['must','Обязательные'],['open','Не отмечены']].map(([k,t])=>`<button class="chip${S.filter===k?' on':''}" data-f="${k}">${t}</button>`).join('')}</div>`;
+  const legend=`<div class="legend"><span>${kindIcon('s')} 220 В</span><span>${kindIcon('p')} силовая</span><span>${kindIcon('n')} интернет</span><span>${kindIcon('o')} вывод</span><span>${kindIcon('w')} выключатель</span><span>${kindIcon('l')} свет / кабель-канал</span></div>`;
+  const sheet=r.wall?`<div class="sheet"><div class="cap"><b>Развёртка</b><span>${esc(r.wall.title)} · высоты в см</span></div><div class="drawing">${drawWall(r)}</div>${legend}<p class="note" style="margin-top:6px">Нажмите на точку — подсветится пункт списка. Цифры на развёртке совпадают с номерами пунктов.</p></div>`:'';
+  const picker='';
+  $('#main').innerHTML=`<div class="room-head"><h2>${esc(r.name)}</h2>${filt}<div class="lead"><p>${esc(r.lead)}</p><p style="font-family:var(--f-mono);font-size:13px">${st.d} из ${st.n} отмечено</p></div></div>${picker}
+  <div class="room-body${r.wall?'':' nodraw'}">${sheet}<div><ul class="items">${list}</ul>${r.table?tableHTML(r.table):''}</div></div>${toolsHTML()}`;
+}
+function toolsHTML(){return `<div class="tools"><button class="btn" id="copyOpen">Скопировать незакрытые пункты</button><button class="btn" id="csvBtn">Выгрузить точки в CSV</button><button class="btn" id="resetRoom">Снять отметки в помещении</button><span class="msg" id="toolMsg"></span></div>`}
+
+function renderHeights(){
+  const pts=ALL.filter(i=>i.h!=null&&i.lv.includes(curLevel())).map(i=>({...i,rn:ROOMS.find(r=>r.id===i.room).name}));
+  const levels={};pts.forEach(i=>(levels[i.h]=levels[i.h]||[]).push(i));
+  const hs=Object.keys(levels).map(Number).sort((a,b)=>a-b);
+  // layout rows with min spacing
+  const top=30,scale=2.6,floor=top+250*scale;
+  let lastY=Infinity;const rows=hs.slice().reverse().map(h=>{let y=floor-h*scale;return {h,y}});
+  // resolve label overlaps (labels go down from top)
+  let prev=-Infinity;rows.sort((a,b)=>a.y-b.y).forEach(r=>{r.ly=Math.max(r.y,prev+22);prev=r.ly});
+  const H=Math.max(floor+30,prev+30);
+  let g='';
+  for(let h=0;h<=250;h+=10){const y=floor-h*scale;const maj=h%50===0;g+=`<line x1="${maj?84:92}" x2="100" y1="${y}" y2="${y}" stroke="var(--muted)"/>`;if(maj)g+=`<text x="78" y="${y+4}" text-anchor="end" font-family="var(--f-mono)" font-size="12" fill="var(--muted)">${h}</text>`}
+  g+=`<line x1="100" x2="100" y1="${floor-250*scale}" y2="${floor}" stroke="var(--muted)"/><line x1="20" x2="1000" y1="${floor}" y2="${floor}" stroke="var(--ink)" stroke-width="1.4"/><text x="110" y="${floor+20}" font-size="12" fill="var(--muted)">чистовой пол</text>`;
+  g+=`<rect x="100" y="${floor-100*scale}" width="22" height="${20*scale}" fill="var(--coral)" fill-opacity=".14"/><text x="111" y="${floor-90*scale+4}" text-anchor="middle" font-size="9" fill="var(--coral)" transform="rotate(-90 111 ${floor-90*scale})">выкл.</text>`;
+  for(const r of rows){
+    const its=levels[r.h];const names=[...new Set(its.map(i=>i.rn))];
+    const short=its.map(i=>i.t.split(/[:—(,]/)[0].trim()).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3).join(' · ');
+    g+=`<path d="M100 ${r.y} H140 L160 ${r.ly} H170" fill="none" stroke="var(--line)"/><circle cx="140" cy="${r.y}" r="4.5" fill="var(--surface)" stroke="var(--coral)" stroke-width="1.6"/>`;
+    g+=`<text x="176" y="${r.ly+4}" font-family="var(--f-mono)" font-size="13" font-weight="500" fill="var(--ink)">${r.h}</text>`;
+    g+=`<text x="222" y="${r.ly+4}" font-size="13" fill="var(--ink)">${esc(short.length>78?short.slice(0,76)+'…':short)}</text>`;
+    g+=`<text x="1000" y="${r.ly+4}" text-anchor="end" font-size="11.5" fill="var(--muted)">${esc(names.join(', '))}</text>`;
+  }
+  $('#main').innerHTML=`<div class="room-head"><h2>Шкала высот</h2><div class="lead"><p>Все высоты из чек-листа на одной линейке: от чистового пола до оси розетки, в сантиметрах. Розовая полоса — зона выключателей 80–100 см.</p></div></div><div class="ruler-wrap"><svg viewBox="0 0 1020 ${H}" font-family="var(--f-body)" role="img" aria-label="Шкала высот розеток">${g}</svg></div>
+  <div class="panel"><h4>Все пункты с высотой</h4><div class="tbl"><table><thead><tr><th>см</th><th>Помещение</th><th>Пункт</th></tr></thead><tbody>${pts.sort((a,b)=>a.h-b.h).map(i=>`<tr><td class="n">${i.h}</td><td>${esc(i.rn)}</td><td>${esc(i.t)}</td></tr>`).join('')}</tbody></table></div></div>${toolsHTML()}`;
+}
+
+function renderLoad(){
+  const p=curP();p.calc=p.calc||{};APPLIANCES.forEach(a=>{if(p.calc[a.id]==null)p.calc[a.id]=a.def});
+  const rows=APPLIANCES.map(a=>`<div class="app-row"><input type="number" min="0" max="20" step="1" id="q-${a.id}" data-q="${a.id}" value="${p.calc[a.id]}" aria-label="Количество: ${esc(a.n)}"><div class="nm">${esc(a.n)}<small>${a.line?'отдельная линия':'розеточная группа'}</small></div><div class="pw">${a.kw.toFixed(2)} кВт</div><div class="pw" id="s-${a.id}">${(a.kw*p.calc[a.id]).toFixed(1)}</div></div>`).join('');
+  $('#main').innerHTML=`<div class="room-head"><h2>Нагрузка</h2><div class="lead"><p>Быстрая прикидка: хватит ли выделенной мощности и сколько отдельных линий заложить. Укажите количество приборов — сумма пересчитается. Это ориентир для разговора с электриком, не проектный расчёт.</p></div></div>
+  <div class="calc"><div class="panel" style="margin-top:0">${rows}</div>
+  <div class="sum" id="sum"></div></div><div class="startgo" style="margin-top:18px"><a class="btn primary" href="#scheme">Построить однолинейную схему →</a></div>${toolsHTML()}`;
+  updSum();
+}
+function updSum(){
+  const p=curP();let inst=0,lines=0;APPLIANCES.forEach(a=>{const q=+p.calc[a.id]||0;inst+=a.kw*q;if(a.line)lines+=q>0?(a.id==='floor'||a.id==='ac'?q:1):0;const s=document.getElementById('s-'+a.id);if(s)s.textContent=(a.kw*q).toFixed(1)});
+  const kc=inst>14?0.45:inst>8?0.55:0.65;const est=inst*kc;const lim=+p.limit||15;const pct=Math.min(est/lim,1.3);
+  const col=est<=lim*.8?'var(--ok)':est<=lim?'var(--warn)':'var(--crit)';
+  const verdict=est<=lim*.8?'Запас есть':est<=lim?'На пределе — согласуйте с электриком':'Не хватает — нужна разгрузка или увеличение мощности';
+  const sockets=Math.max(2,Math.ceil(ROOMS.filter(r=>r.grp==='Квартира'&&r.wall).length/2)+1);
+  $('#sum').innerHTML=`<div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Расчётная нагрузка</div>
+  <div class="big">${est.toFixed(1)} <small>кВт</small></div>
+  <div class="meter"><i style="width:${Math.min(pct,1)*100}%;background:${col}"></i></div>
+  <div style="font-weight:500;color:${col}">${verdict}</div>
+  <div style="margin-top:14px">
+  <div class="kv"><span>Установленная мощность</span><span>${inst.toFixed(1)} кВт</span></div>
+  <div class="kv"><span>Коэфф. одновременности</span><span>${kc.toFixed(2)}</span></div>
+  <div class="kv"><span><label for="lim">Выделенная мощность, кВт</label></span><span><input type="number" id="lim" min="3" max="50" step="0.5" value="${lim}" style="width:76px;font-family:var(--f-mono)"></span></div>
+  <div class="kv"><span>Отдельных силовых линий</span><span>${lines}</span></div>
+  <div class="kv"><span>Розеточных групп (ориентир)</span><span>${sockets}–${sockets+2}</span></div>
+  <div class="kv"><span>Групп освещения (ориентир)</span><span>2–4</span></div></div>
+  <p class="note">Коэффициент одновременности взят упрощённо: чем больше установленная мощность, тем меньше приборов работает одновременно. Итоговую схему щита, автоматы и сечения подбирает электрик по ПУЭ и СП 256.</p>`;
+}
+
+function renderAll(){
+  renderProj();renderTotal();renderRail();
+  $('#lvSwitch').innerHTML=levelSwitch();
+  if(S.view==='start')renderStart();else if(S.view==='scheme')renderScheme();else if(S.view==='heights')renderHeights();else if(S.view==='load')renderLoad();
+  else{const r=ROOMS.find(x=>x.id===S.view)||ROOMS[0];renderRoom(r)}
+}
+
+/* ---------------- EVENTS ---------------- */
+function route(){const h=(location.hash||'').slice(1);S.view=(ROOMS.some(r=>r.id===h)||h==='heights'||h==='load'||h==='start'||h==='scheme')?h:'start';renderAll();}
+window.addEventListener('hashchange',()=>{route();window.scrollTo({top:0})});
+
+function setHL(id,on){document.querySelectorAll(`[data-item="${CSS.escape(id)}"]`).forEach(el=>el.classList.toggle('hl',on))}
+document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-item]');if(t)setHL(t.dataset.item,true)});
+document.addEventListener('mouseout',e=>{const t=e.target.closest('[data-item]');if(t&&!t.contains(e.relatedTarget))setHL(t.dataset.item,false)});
+document.addEventListener('focusin',e=>{const t=e.target.closest('.sym');if(t)setHL(t.dataset.item,true)});
+document.addEventListener('focusout',e=>{const t=e.target.closest('.sym');if(t)setHL(t.dataset.item,false)});
+
+function toggle(id){const p=curP();if(p.checks[id])delete p.checks[id];else p.checks[id]=true;queueSave();
+  const y=window.scrollY;renderRail();renderTotal();if(S.view!=='heights'&&S.view!=='load'&&S.view!=='start'&&S.view!=='scheme'){renderRoom(ROOMS.find(r=>r.id===S.view));}window.scrollTo({top:y});
+  const li=document.querySelector(`li.it[data-item="${CSS.escape(id)}"] .cb`);if(li)li.focus({preventScroll:true});}
+function jump(id){const li=document.querySelector(`li.it[data-item="${CSS.escape(id)}"]`);if(!li){S.filter='all';renderRoom(ROOMS.find(r=>r.id===S.view));return jump(id)}
+  li.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});li.classList.remove('flash');void li.offsetWidth;li.classList.add('flash')}
+
+document.addEventListener('click',async e=>{
+  const tg=e.target.closest('[data-tg]');if(tg){toggle(tg.dataset.tg);return}
+  const inf=e.target.closest('[data-info]');if(inf){const id=inf.dataset.info;S.open[id]=!S.open[id];const ex=document.getElementById('ex-'+id);if(ex)ex.hidden=!S.open[id];inf.setAttribute('aria-expanded',!!S.open[id]);inf.classList.toggle('on',!!S.open[id]);return}
+  const lvb=e.target.closest('[data-lv]');if(lvb){const p=curP();p.level=+lvb.dataset.lv;queueSave();const y=window.scrollY;renderAll();window.scrollTo({top:y});return}
+  const sym=e.target.closest('.sym');if(sym){jump(sym.dataset.item);return}
+  const f=e.target.closest('[data-f]');if(f){S.filter=f.dataset.f;renderRoom(ROOMS.find(r=>r.id===S.view));return}
+  const id=e.target.id;
+  if(id==='newOk')return createProj();
+  if(id==='newNo'){S.newMode=false;renderProj();return}
+  if(id==='delBtn'){S.delMode=true;renderProj();return}
+  if(id==='delNo'){S.delMode=false;renderProj();return}
+  if(id==='delOk'){const p=curP();S.projects=S.projects.filter(x=>x.id!==p.id);S.cur=S.projects[0].id;S.delMode=false;try{await store.remove(p.id)}catch(err){}renderAll();return}
+  if(id==='svgBtn')return exportSvg();
+  if(id==='olsCsv')return exportOlsCsv();
+  if(id==='copyOpen')return copyOpen();
+  if(id==='csvBtn')return exportCsv();
+  if(id==='resetRoom')return resetRoom(e.target);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='newName')createProj();
+  if(e.key==='Escape'&&(S.newMode||S.delMode)){S.newMode=S.delMode=false;renderProj()}
+  const sym=e.target.closest&&e.target.closest('.sym');if(sym&&(e.key==='Enter'||e.key===' ')){e.preventDefault();jump(sym.dataset.item)}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='projSel'){if(e.target.value==='__new'){S.newMode=true;renderProj();return}S.cur=e.target.value;S.newMode=S.delMode=false;renderAll();}
+});
+document.addEventListener('input',e=>{
+  const q=e.target.dataset&&e.target.dataset.q;const p=curP();
+  if(q){p.calc[q]=Math.max(0,Math.min(20,+e.target.value||0));updSumSoft();queueSave();}
+  const rm=e.target.dataset&&e.target.dataset.rm;if(rm){const R=schemeRooms(p);R[rm]=Math.max(0,Math.min(+e.target.max||4,+e.target.value||0));queueSave();clearTimeout(S.rmT);S.rmT=setTimeout(()=>{const y=window.scrollY;const f=document.activeElement&&document.activeElement.id;renderScheme();window.scrollTo({top:y});if(f){const el=document.getElementById(f);el&&el.focus()}},350);}
+  if(e.target.id==='lim'){p.limit=+e.target.value||10;updSumSoft(true);queueSave();}
+});
+function updSumSoft(keepLim){const f=document.activeElement&&document.activeElement.id;updSum();if(f==='lim'){const i=$('#lim');i.focus();const v=i.value;i.value='';i.value=v}}
+
+function createProj(){const n=($('#newName')||{}).value;const name=(n||'').trim()||'Новый проект';const calc={};APPLIANCES.forEach(a=>calc[a.id]=a.def);
+  const p={id:uid(),name:name.slice(0,80),checks:{},calc,limit:15,updated:Date.now()};S.projects.unshift(p);S.cur=p.id;S.newMode=false;renderAll();queueSave()}
+
+function openLines(){const p=curP();const out=[];ROOMS.forEach(r=>{const o=visItems(r).filter(i=>!p.checks[i.id]);if(o.length){out.push(r.name.toUpperCase());o.forEach(i=>out.push('☐ '+i.t+(i.h!=null?` (${i.h} см)`:'')+(i.m?' — обязательно':'')));out.push('')}});return out.join('\n')}
+async function copyOpen(){const txt=`${curP().name} — незакрытые пункты\n\n`+openLines();const m=$('#toolMsg');
+  try{await navigator.clipboard.writeText(txt);m.textContent='Скопировано в буфер обмена'}catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='width:100%;height:160px;margin-top:8px';m.textContent='Не удалось скопировать автоматически — выделите текст ниже:';m.after(ta);ta.select()}}
+async function exportCsv(){const p=curP();const m=$('#toolMsg');
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[['Помещение','№','Пункт','Высота, см','Кол-во','Тип','Обязательно','Источник','Отмечено'].map(q).join(';')];
+  ROOMS.forEach(r=>visItems(r).forEach((i,ix)=>rows.push([r.name,ix+1,i.t,i.h??'',i.q??'',KIND[i.k],i.m?'да':'',SRC[i.s],p.checks[i.id]?'да':''].map(q).join(';'))));
+  const data='﻿'+rows.join('\r\n');
+  return dlSave(`электрика — ${p.name}.csv`,data);}
+function resetRoom(btn){const m=$('#toolMsg');if(!btn.dataset.sure){btn.dataset.sure='1';btn.textContent='Точно снять все отметки?';btn.classList.add('danger');return}
+  const p=curP();const scope=ROOMS.find(r=>r.id===S.view);const ids=scope?scope.items.map(i=>i.id):ALL.map(i=>i.id);ids.forEach(i=>delete p.checks[i]);queueSave();renderAll();$('#toolMsg').textContent=scope?'Отметки в помещении сняты':'Все отметки сняты'}
+
+/* ---------------- BOOT ---------------- */
+(function(){const st=document.createElement('style');st.textContent=OLS_CSS;document.head.appendChild(st)})();
+(function boot(){
+  const local=loadLocal();S.projects=local.length?local.sort((a,b)=>(b.updated||0)-(a.updated||0)):[exampleProject()];
+  S.cur=S.projects[0].id;route();initDb();
+})();
+</script>
+
+</body></html>

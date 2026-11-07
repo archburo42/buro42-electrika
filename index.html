@@ -174,6 +174,9 @@ svg.scheme{display:block;width:100%;min-width:600px;height:auto;font-family:var(
 @media (max-width:900px){.levels.modes{grid-template-columns:minmax(0,1fr)}.levels.modes .lvt{font-size:22px}}
 li.grp.main{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
 li.grp.main:first-child{border-top:0;margin-top:0;padding-top:0}
+.smartbox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);margin:0 0 18px}
+.smartsw{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;font-weight:500}
+.smartbox .levels{margin:0}
 details.auto{margin-top:14px;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
 details.auto summary{cursor:pointer;font-weight:500}
 details.auto ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.5}
@@ -451,7 +454,7 @@ const ROOMS=[
  {t:'Решение по умному дому принято до черновой электрики (проводной KNX или беспроводной)',k:'x',m:1,s:'buro'},
  {t:'Сценарии согласованы с клиентом: «вечер», «кино», «ночь», «ушёл из дома»',k:'x',m:0,s:'intl'}
 ]},
-{id:'smart',grp:'Квартира',name:'Умный дом',lead:'Состав системы зависит от уровня оснащения, выбранного вверху: «Минимум» — беспроводной умный дом, «Стандарт» — контроллер и реле в щите, «Максимум» — шина KNX. Нажмите «i», чтобы прочитать объяснение простым языком. Решение принимают до черновой электрики: беспроводную систему можно добавить потом, проводную — только пока стены открыты.',table:'smart',items:[
+{id:'smart',grp:'Квартира',name:'Умный дом',lead:'Умный дом выбирается отдельно от остальной электрики: включите его и выберите свой уровень — «Минимум» — беспроводной умный дом, «Стандарт» — контроллер и реле в щите, «Максимум» — шина KNX. Нажмите «i», чтобы прочитать объяснение простым языком. Решение принимают до черновой электрики: беспроводную систему можно добавить потом, проводную — только пока стены открыты.',table:'smart',items:[
  {g:'Решение',t:'Уровень системы выбран вместе с клиентом до черновой электрики',k:'x',m:1,s:'buro',lv:[1,2,3],e:'Уровень определяет, сколько проводов нужно спрятать в стены. Беспроводные устройства можно купить и поставить после ремонта. Проводную систему — только пока стены не оштукатурены. Если отложить решение, потом придётся штробить готовую отделку.'},
  {t:'Выбрана экосистема: Алиса, Салют, Apple Home, Google Home или Home Assistant; совместимость устройств проверена до покупки',k:'x',m:1,s:'intl',lv:[1,2,3],e:'Экосистема — это приложение и голосовой помощник, через которые вы управляете домом. Устройства одного бренда не всегда работают с приложением другого. Стандарт Matter создан, чтобы техника разных производителей понимала друг друга: например, у Яндекса есть розетки и ленты с Matter, а хаб Сбера работает по Zigbee. Перед покупкой проверьте, что все устройства видны в выбранном приложении.'},
  {t:'Сценарии прописаны с клиентом: «ушёл из дома», «ночь», «кино», «протечка», «отъезд»',k:'x',m:1,s:'buro',lv:[1,2,3],e:'Сценарий — несколько действий одной командой. «Ушёл из дома»: гаснет свет, закрываются шторы, выключается кондиционер, но холодильник и роутер работают. Когда сценарии придуманы заранее, электрик сразу разводит нужные линии отдельно.'},
@@ -679,26 +682,37 @@ function drawWall(r){
 
 
 const LEVELS=[
- {n:1,t:'Минимум',b:'Эконом',d:'Всё, что требуют нормы и без чего неудобно жить: безопасная электрика, розетки под технику и мебель, обязательный свет.',inc:['Нормы ПУЭ и СП 256, УЗО, отдельные линии','Розетки под технику и расстановку мебели','Один-два слоя света, обычные выключатели','Умный дом: беспроводной — хаб и датчики протечки'],fit:'Аренда, вторичка, косметический ремонт'},
- {n:2,t:'Стандарт',b:'Комфорт',d:'Минимум плюс то, что делает квартиру удобной: подсветка, проходные выключатели, запас розеток, сеть и резерв на будущее.',inc:['Всё из «Минимума»','Подсветка, ночной свет, проходные выключатели','Кабель-каналы, гофры, Wi-Fi точки, защита от протечек','Умный дом: контроллер и реле в щите'],fit:'Квартира или дом с капитальным ремонтом'},
- {n:3,t:'Максимум',b:'Премиум',d:'Стандарт плюс всё, что повышает класс объекта: электрокарнизы, проектор, встроенная акустика, KNX и DALI.',inc:['Всё из «Стандарта»','Электрокарнизы, проектор, мультирум, электрокамин','Скрытые зарядки, лючки в полу, подъёмные столы','Умный дом: шина KNX, светильники DALI'],fit:'Премиальная квартира, дом, офис'}
+ {n:1,t:'Минимум',b:'Эконом',d:'Всё, что требуют нормы и без чего неудобно жить: безопасная электрика, розетки под технику и мебель, обязательный свет.',inc:['Нормы ПУЭ и СП 256, УЗО, отдельные линии','Розетки под технику и расстановку мебели','Один-два слоя света, обычные выключатели'],fit:'Аренда, вторичка, косметический ремонт'},
+ {n:2,t:'Стандарт',b:'Комфорт',d:'Минимум плюс то, что делает квартиру удобной: подсветка, проходные выключатели, запас розеток, сеть и резерв на будущее.',inc:['Всё из «Минимума»','Подсветка, ночной свет, проходные выключатели','Кабель-каналы, гофры, Wi-Fi точки, защита от протечек'],fit:'Квартира или дом с капитальным ремонтом'},
+ {n:3,t:'Максимум',b:'Премиум',d:'Стандарт плюс всё, что повышает класс объекта: электрокарнизы, проектор, встроенная акустика, KNX и DALI.',inc:['Всё из «Стандарта»','Электрокарнизы, проектор, мультирум, электрокамин','Скрытые зарядки, лючки в полу, подъёмные столы'],fit:'Премиальная квартира, дом, офис'}
 ];
 function curLevel(){const p=curP();return p.level||p.smartLevel||2}
-function smartLevel(){return curLevel()}
-function visItems(r){const L=curLevel();return r.items.filter(i=>!i.lv||i.lv.includes(L))}
+/* ---- умный дом: отдельный выключатель и свой уровень, не зависят от общего ---- */
+function smartSt(){const p=curP();p.smart=p.smart||{on:false,lv:2};return p.smart}
+const smartOn=()=>!!smartSt().on;
+function smartLevel(){return smartSt().lv||2}
+function visItems(r){if(r.id==='smart'){if(!smartOn())return [];const SL=smartLevel();return r.items.filter(i=>!i.lv||i.lv.includes(SL))}const L=curLevel();return r.items.filter(i=>!i.lv||i.lv.includes(L))}
+const SMART_LV=[{n:1,t:'Минимум',s:'Беспроводной',d:'Хаб или умная колонка, лампы, реле и датчики по радио. Проводов почти не нужно — можно добавить и после ремонта.'},
+ {n:2,t:'Стандарт',s:'Контроллер в щите',d:'Свет, шторы и краны управляются реле в щите, кнопки и датчики подключены проводами. Закладывается на черновой электрике.'},
+ {n:3,t:'Максимум',s:'Шина KNX',d:'Профессиональная проводная система: KNX, плавный свет DALI, мультирум. Нужен проект интегратора.'}];
+function smartBlock(compact){const st=smartSt();const home=isHome();
+  const cnt=n=>ROOMS.find(r=>r.id==='smart').items.filter(i=>i.lv.includes(n)&&!(home&&isProItem(i))).length;
+  return `<div class="smartbox"><div class="smartsw"><span>Умный дом в проекте</span><div class="seg" role="radiogroup" aria-label="Умный дом">${[['off','Не нужен'],['on','Нужен']].map(([k,t])=>{const on=(k==='on')===st.on;return `<button role="radio" aria-checked="${on}" class="${on?'on':''}" data-smart="${k}">${t}</button>`}).join('')}</div></div>
+  ${st.on?`<p class="note" style="margin:10px 0 12px">Уровень умного дома выбирается отдельно и не зависит от уровня остальной электрики.</p><div class="levels${compact?'':' big'}" role="radiogroup" aria-label="Уровень умного дома">${SMART_LV.map(l=>`<button class="lvcard${l.n===st.lv?' on':''}" role="radio" aria-checked="${l.n===st.lv}" data-slv="${l.n}"><span class="lvdots">${[1,2,3].map(i=>`<i class="${i<=l.n?'f':''}"></i>`).join('')}</span><span class="lvt">${l.t}</span><span class="lvs">${l.s}</span><span class="lvd">${l.d}</span><span class="lvn">${cnt(l.n)} пунктов</span></button>`).join('')}</div>`:`<p class="note" style="margin:10px 0 0">Включите, если хотите управлять светом, шторами, климатом и защитой от протечек со смартфона или голосом. Пункты умного дома появятся в чек-листе и на схеме щита.</p>`}</div>`}
 /* ---- mode: home (для себя) / pro ---- */
 function curMode(){return curP().mode||'pro'}
 const isHome=()=>curP().mode==='home';
-const PRO_ROOMS=new Set(['general','light','smart','public','mistakes']);
+const PRO_ROOMS=new Set(['general','light','public','mistakes']);
+const SMART_PRO=new Set([1,6,7,8,9,10,11,12,13,14,15,17,24,30,31,32].map(n=>'smart-'+n));
 const PRO_RX=/УЗО|АВДТ|дифавтомат|лини[яиюей]|IP\d|СУП|гофр|щит|кабел|сечени|терморегулятор|блок питания|DALI|KNX|ПУЭ|СП \d|заземл|автомат/i;
 const isConcrete=it=>!!(it.p||it.h!=null||it.q);
-function isProItem(it){return PRO_ROOMS.has(it.room)||it.k==='x'||(!isConcrete(it)&&(it.k==='p'||PRO_RX.test(it.t)))}
+function isProItem(it){if(it.room==='smart')return SMART_PRO.has(it.id);return PRO_ROOMS.has(it.room)||it.k==='x'||(!isConcrete(it)&&(it.k==='p'||PRO_RX.test(it.t)))}
 const isAuto=it=>isHome()&&isProItem(it);
 function shownItems(r){return visItems(r).filter(i=>!isAuto(i))}
 function autoItems(r){return isHome()?visItems(r).filter(isProItem):[]}
-const RAIL=[['Розетки по помещениям',['hall','kitchen','living','bedroom','kids','bath','office','service']],['Основные настройки',['general','light','smart']],['Другое',['public','mistakes']]];
+const RAIL=[['Розетки по помещениям',['hall','kitchen','living','bedroom','kids','bath','office','service']],['Умный дом',['smart']],['Основные настройки',['general','light']],['Другое',['public','mistakes']]];
 function railRooms(){return RAIL.flatMap(([g,ids])=>ids).filter(id=>!(isHome()&&PRO_ROOMS.has(id)))}
-const LV_HOME=[['Розетки под технику и мебель','Свет: один-два слоя, обычные выключатели','Простые датчики протечки'],['Всё из «Минимума»','Подсветка, ночной свет, выключатели у кровати','Запас розеток, интернет кабелем, Wi-Fi','Основа умного дома'],['Всё из «Стандарта»','Электрошторы, проектор, встроенная акустика','Скрытые зарядки, розетки в полу','Полный умный дом']];
+const LV_HOME=[['Розетки под технику и мебель','Свет: один-два слоя, обычные выключатели','Простые датчики протечки'],['Всё из «Минимума»','Подсветка, ночной свет, выключатели у кровати','Запас розеток, интернет кабелем, Wi-Fi'],['Всё из «Стандарта»','Электрошторы, проектор, встроенная акустика','Скрытые зарядки, розетки в полу']];
 function levelSwitch(){const L=curLevel();return `<div class="seg" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button role="radio" aria-checked="${l.n===L}" class="${l.n===L?'on':''}" data-lv="${l.n}">${l.t}</button>`).join('')}</div>`}
 function modeSwitch(){const m=curP().mode;return `<div class="seg" role="radiogroup" aria-label="Режим">${[['home','Для себя'],['pro','Профи']].map(([k,t])=>`<button role="radio" aria-checked="${m===k}" class="${m===k?'on':''}" data-mode="${k}">${t}</button>`).join('')}</div>`}
 function renderStart(){
@@ -707,11 +721,12 @@ function renderStart(){
   const modes=[['home','Хочу рассчитать для себя','Ремонт своей квартиры или дома','Только понятные вопросы: где и сколько розеток, выводов и выключателей в каждой комнате. Технические пункты — защита, сечения кабелей, щит — примем по стандарту автоматически, их проверит электрик.'],
     ['pro','Я профессионал','Дизайнер, архитектор, электрик','Полный чек-лист: нормы ПУЭ и СП 256, отдельные линии и защита, умный дом, общественные помещения, частые ошибки и источники каждого пункта.']];
   const first=railRooms()[0];
-  $('#main').innerHTML=`<div class="start"><p class="eyebrow">Шаг 1 из 2</p><h2>Кто вы?</h2><p class="startlead">От ответа зависит, насколько подробным будет чек-лист. Режим можно сменить в любой момент переключателем вверху.</p>
+  $('#main').innerHTML=`<div class="start"><p class="eyebrow">Шаг 1 из 3</p><h2>Кто вы?</h2><p class="startlead">От ответа зависит, насколько подробным будет чек-лист. Режим можно сменить в любой момент переключателем вверху.</p>
   <div class="levels modes big" role="radiogroup" aria-label="Режим">${modes.map(([k,t,s,d])=>`<button class="lvcard${m===k?' on':''}" role="radio" aria-checked="${m===k}" data-mode="${k}"><span class="lvt">${t}</span><span class="lvs">${s}</span><span class="lvd">${d}</span></button>`).join('')}</div>
-  ${m?`<div id="lvStep"><p class="eyebrow">Шаг 2 из 2</p><h2>Уровень оснащения</h2><p class="startlead">От уровня зависит, какие пункты появятся в чек-листе и на схеме щита. Его тоже можно поменять позже — отметки сохранятся.</p>
+  ${m?`<div id="lvStep"><p class="eyebrow">Шаг 2 из 3</p><h2>Уровень оснащения</h2><p class="startlead">От уровня зависит, какие пункты появятся в чек-листе и на схеме щита. Его тоже можно поменять позже — отметки сохранятся.</p>
   <div class="levels big" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button class="lvcard${l.n===L?' on':''}" role="radio" aria-checked="${l.n===L}" data-lv="${l.n}" data-go="1"><span class="lvdots">${[1,2,3].map(i=>`<i class="${i<=l.n?'f':''}"></i>`).join('')}</span><span class="lvt">${l.t}</span><span class="lvs">Бюджет: ${l.b}</span>${home?'':`<span class="lvd">${l.d}</span>`}<ul class="lvinc">${(home?LV_HOME[l.n-1]:l.inc).map(x=>`<li>${x}</li>`).join('')}</ul><span class="lvk"><span>Подходит</span><b>${l.fit}</b></span><span class="lvn">${cnt(l.n)} пунктов</span></button>`).join('')}</div>
-  <div class="startgo"><a class="btn primary" href="#${first}">Начать с розеток по комнатам →</a><span class="msg">Дальше — помещения по порядку слева, затем «Нагрузка» и схема щита.</span></div></div>`:''}</div>`;
+  <div style="margin-top:34px"><p class="eyebrow">Шаг 3 из 3</p><h2>Умный дом</h2>${smartBlock(true)}</div>
+  <div class="startgo" style="margin-top:22px"><a class="btn primary" href="#${first}">Начать с розеток по комнатам →</a><span class="msg">Дальше — помещения по порядку слева, затем «Нагрузка» и схема щита.</span></div></div>`:''}</div>`;
 }
 /* ---- architecture schemes ---- */
 function node(x,y,w,h,t,sub,cls){return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" class="${cls||'nd'}"/><text x="${x+w/2}" y="${y+(sub?h/2-3:h/2+5)}" text-anchor="middle" class="nt">${t}</text>${sub?`<text x="${x+w/2}" y="${y+h/2+14}" text-anchor="middle" class="ns">${sub}</text>`:''}</g>`}
@@ -835,9 +850,10 @@ function buildScheme(p){
   for(let i=1;i<=q('ac');i++)add(`Кондиционер ${q('ac')>1?i:''}`.trim(),kwOf('ac'),{kind:'p',a:16});
   // low-current / smart
   add('Слаботочный щит, роутер',0.2,{a:10,ch:'C',kind:'n'});
-  if(L>=2){add('Контроллер умного дома, БП',0.15,{a:6,rcd:0,kind:'n'});add('Защита от протечек (через ИБП)',0.05,{a:6,rcd:0,kind:'n'})}
-  else add('Модуль защиты от протечек',0.05,{a:6,rcd:0,kind:'n'});
-  if(L===3){add('Питание шины KNX',0.05,{a:6,rcd:0,kind:'n'});add('Шлюз DALI',0.05,{a:6,rcd:0,kind:'n'})}
+  const SL=smartOn()?smartLevel():0;
+  if(SL>=2){add('Контроллер умного дома, БП',0.15,{a:6,rcd:0,kind:'n'});add('Защита от протечек (через ИБП)',0.05,{a:6,rcd:0,kind:'n'})}
+  else{if(SL===1)add('Хаб умного дома, Wi-Fi',0.05,{a:6,rcd:0,kind:'n'});add('Модуль защиты от протечек',0.05,{a:6,rcd:0,kind:'n'})}
+  if(SL===3){add('Питание шины KNX',0.05,{a:6,rcd:0,kind:'n'});add('Шлюз DALI',0.05,{a:6,rcd:0,kind:'n'})}
   const nres=[2,3,4][L-1];for(let i=0;i<nres;i++)G.push({name:'Резерв',kw:0,I:0,a:16,ch:'C',rcd:0,cable:'—',kind:'r',res:true});
   // input
   const lim=+p.limit||15;const three=lim>15;
@@ -854,7 +870,8 @@ function buildScheme(p){
   // modules
   // модули: группы (АВДТ — 2) + QS + QD + при «Стандарте» и выше УЗИП с автоматом и реле напряжения
   const mod=G.reduce((s,g)=>s+(g.rcd?2:1),0)+(three?4:2)+(three?4:2)+(L>=2?(three?4+3:2+1)+(three?6:2):0);
-  const need=Math.ceil(mod*1.25);const box=[24,36,48,54,72,96].find(b=>b>=need)||96;
+  const smartMod=[0,0,8,12][SL];// место под реле/контроллер (Стандарт) или актуаторы KNX (Максимум)
+  const need=Math.ceil(mod*1.25)+smartMod;const box=[24,36,48,54,72,96].find(b=>b>=need)||96;
   const inst=G.reduce((s,g)=>s+g.kw,0);
   return {G,lim,three,ain,aqs,Iin,mod,box,inst,L};
 }
@@ -908,7 +925,7 @@ function schemeSvg(S0,p){
   const d=new Date();const ds=d.toLocaleDateString('ru-RU');
   g+=`<rect x="${bx}" y="${by}" width="${bw}" height="78" class="stamp"/><line x1="${bx}" x2="${bx+bw}" y1="${by+26}" y2="${by+26}" class="grid"/><line x1="${bx+300}" x2="${bx+300}" y1="${by}" y2="${by+78}" class="grid"/>`;
   g+=T(bx+10,by+18,'Однолинейная схема щита ЩК (эскиз)',{c:'sth'})+T(bx+310,by+18,'büro42',{c:'sth'});
-  g+=T(bx+10,by+44,`Проект: ${p.name}`.slice(0,48),{c:'st'})+T(bx+10,by+64,`Уровень: ${LEVELS[L-1].t} · ${ds}`,{c:'sts'});
+  g+=T(bx+10,by+44,`Проект: ${p.name}`.slice(0,48),{c:'st'})+T(bx+10,by+64,`Уровень: ${LEVELS[L-1].t} · умный дом: ${smartOn()?SMART_LV[smartLevel()-1].t.toLowerCase():'нет'} · ${ds}`,{c:'sts'});
   g+=T(bx+310,by+44,'Стадия: эскиз',{c:'sts'})+T(bx+310,by+64,'Не для монтажа',{c:'sts'});
   g+=T(20,by+18,'QF0 — вводной автомат по ТУ · QS — выключатель нагрузки · QD — УЗО противопожарное, тип S',{c:'sts'});
   g+=T(20,by+36,'QF — автоматический выключатель · QFD — АВДТ (дифавтомат) · ΔI — защита от тока утечки',{c:'sts'});
@@ -922,7 +939,7 @@ function renderScheme(){
   const cntBy=(f)=>{const m={};real.filter(f).forEach(g=>{const k=`${g.ch}${g.a}`+(g.rcd?` ${g.rcd} мА`:'');m[k]=(m[k]||0)+1});return Object.entries(m).map(([k,v])=>`${v} × ${k}`).join(', ')||'—'};
   const est=S0.inst*(S0.inst>14?0.45:S0.inst>8?0.55:0.65);
   const num=(id,label,max)=>`<label class="rq"><span>${label}</span><input type="number" min="0" max="${max}" id="rm-${id}" data-rm="${id}" value="${R[id]}"></label>`;
-  $('#main').innerHTML=`<div class="room-head"><h2>Однолинейная схема</h2><div class="lead"><p>Эскиз щита по вашему выбору: уровень «${LEVELS[S0.L-1].t}», приборы из вкладки «Нагрузка» и состав квартиры ниже. Подходит для обсуждения с клиентом и электриком; рабочий проект щита выполняет специалист с допуском.</p></div></div>
+  $('#main').innerHTML=`<div class="room-head"><h2>Однолинейная схема</h2><div class="lead"><p>Эскиз щита по вашему выбору: уровень «${LEVELS[S0.L-1].t}», умный дом — ${smartOn()?'«'+SMART_LV[smartLevel()-1].t+'»':'не нужен'}, приборы из вкладки «Нагрузка» и состав квартиры ниже. Подходит для обсуждения с клиентом и электриком; рабочий проект щита выполняет специалист с допуском.</p></div></div>
   <div class="panel" style="margin-top:0"><h4>Состав квартиры</h4><div class="rqs">${num('bed','Спален',4)}${num('kids','Детских',3)}${num('bath','Ванных',3)}${num('wc','Отдельных санузлов',3)}${num('office','Кабинет',1)}${num('balcony','Балкон / лоджия',2)}</div><p class="note">Приборы, отдельные линии и выделенная мощность берутся из вкладки <a href="#load">«Нагрузка»</a>.</p></div>
   <div class="olsum">
    <div><span>Ввод</span><b>${S0.three?'3 фазы, 380 В':'1 фаза, 230 В'}</b></div>
@@ -960,9 +977,9 @@ function renderRail(){
   let h=`<h3>Начало</h3><a href="#start" class="${S.view==='start'?'on':''}"><span>Режим и уровень</span><span class="cnt">${m?(home?'для себя':'профи')+' · ':''}${LEVELS[curLevel()-1].t.toLowerCase()}</span></a>`;
   for(const [g,ids] of RAIL){const rs=ids.filter(id=>!(home&&PRO_ROOMS.has(id))).map(id=>ROOMS.find(r=>r.id===id));if(!rs.length)continue;
     h+=`<h3>${esc(g)}</h3>`;
-    for(const r of rs){const st=roomStats(r);h+=`<a href="#${r.id}" class="${S.view===r.id?'on':''}"><span>${esc(r.name)}</span><span class="cnt">${st.d}/${st.n}</span><span class="bar"><i style="width:${st.n?st.d/st.n*100:0}%"></i></span></a>`}
+    for(const r of rs){const st=roomStats(r);const off=r.id==='smart'&&!smartOn();h+=`<a href="#${r.id}" class="${S.view===r.id?'on':''}"><span>${esc(r.name)}</span><span class="cnt">${off?'не нужен':r.id==='smart'?SMART_LV[smartLevel()-1].t.toLowerCase()+' · '+st.d+'/'+st.n:st.d+'/'+st.n}</span><span class="bar"><i style="width:${st.n?st.d/st.n*100:0}%"></i></span></a>`}
   }
-  if(home)h+=`<p class="railnote">Общие правила, освещение, умный дом и проверка ошибок приняты по стандарту — их проверит электрик.</p>`;
+  if(home)h+=`<p class="railnote">Общие правила, освещение и проверка ошибок приняты по стандарту — их проверит электрик.</p>`;
   h+=`<h3>Расчёт и итог</h3><a href="#load" class="${S.view==='load'?'on':''}"><span>Нагрузка</span><span class="cnt"></span></a><a href="#scheme" class="${S.view==='scheme'?'on':''}"><span>Однолинейная схема</span><span class="cnt">бонус</span></a><a href="#heights" class="${S.view==='heights'?'on':''}"><span>Шкала высот</span><span class="cnt"></span></a>`;
   $('#rail').innerHTML=h;
 }
@@ -996,7 +1013,7 @@ function tableHTML(kind){
   ${[['Прихожая','Споты / трек','Зеркало','Подсветка пола по датчику','3000 K'],['Кухня','Споты / линии','Под верхними шкафами','Подвесы над столом','3000–4000 K'],['Гостиная','Люстра / трек','Торшер для чтения','Карниз, ниши, картины','2700–3000 K'],['Спальня','Потолочный','Бра или подвесы у кровати','Подсветка под кроватью','2700 K'],['Детская','Потолочный','Настольная лампа','Ночник','3000 / 4000 K'],['Ванная','Споты IP44+','Зеркало','Ниши, пол','3000–4000 K'],['Кабинет','Потолочный','Настольная, 300–500 лк','Стеллаж','4000 K']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="n">${r[4]}</td></tr>`).join('')}</tbody></table></div></div>`;
 
   if(kind==='smart'){const L=smartLevel();const lv=LEVELS[L-1];return `<div class="panel"><h4>Как устроена система · ${['беспроводной умный дом','контроллер и реле в щите','шина KNX'][L-1]}</h4><div class="tbl">${archSvg(L)}</div><p class="note">${['Датчики и лампы связываются с хабом по радио, хаб — с телефоном через Wi-Fi. Проводов почти не нужно, но всё зависит от качества связи.','Свет, шторы и краны идут отдельными линиями к реле в щите. Кнопки и датчики подключены к контроллеру слаботочным кабелем, часть датчиков может быть беспроводной.','Все кнопки и датчики висят на одной шине KNX. Нагрузками управляют актуаторы в щите, светильники — по DALI. Система работает без центрального сервера.'][L-1]}</p></div>
-  <div class="panel"><h4>Где ставить устройства · пример квартиры</h4><div class="tbl">${planSvg(L)}</div><p class="note">Схема показывает только устройства выбранного уровня. Переключите уровень вверху, чтобы сравнить.</p></div>
+  <div class="panel"><h4>Где ставить устройства · пример квартиры</h4><div class="tbl">${planSvg(L)}</div><p class="note">Схема показывает только устройства выбранного уровня. Переключите уровень умного дома выше, чтобы сравнить.</p></div>
   <div class="panel"><h4>Нормы и стандарты</h4><div class="tbl"><table><thead><tr><th>Документ</th><th>Что регулирует</th><th>Статус</th></tr></thead><tbody>
   ${[['ГОСТ Р 70300-2022','Кабели управления оборудованием умного дома: разделение с силовыми, маркировка, кабельный журнал','РФ, с 01.01.2023'],['ГОСТ Р 71870-2024','Требования к устройствам умного дома: структура, интерфейсы, совместимость','РФ, с 01.02.2025'],['ГОСТ Р 71868-2024','Классы умных многоквартирных домов и порядок оценки','РФ, с 01.02.2025'],['ГОСТ Р 71872-2024','Многоабонентский домофон с сетевым интерфейсом','РФ, с 01.02.2025'],['ПУЭ-7, СП 256.1325800','Электробезопасность: УЗО, группы, сечения — действуют и для умного дома','РФ, обязательны'],['ISO/IEC 14543-3, EN 50090','Шина KNX: устройства, кабель, монтаж','Международный стандарт'],['Matter (CSA)','Совместимость устройств разных брендов и экосистем','Отраслевой стандарт'],['DIN 18015-2, RAL-RG 678','Уровни оснащения квартиры; уровни «Plus» предусматривают автоматизацию здания','Германия, рекомендательные']].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div><p class="note">Российские ГОСТы по умному дому добровольные: обязательны для госзаказа, для частного ремонта служат ориентиром. Требования электробезопасности ПУЭ и СП 256 действуют всегда.</p></div>`}
   if(kind==='lux')return `<div class="panel"><h4>Освещённость — ориентиры</h4><div class="tbl"><table><thead><tr><th>Помещение</th><th>лк</th><th>Особенности</th></tr></thead><tbody>
@@ -1017,7 +1034,8 @@ function renderRoom(r){
   for(const o of conc){const g=gOf[o.it.id];if(g&&g!==lastG){list+=`<li class="grp">${esc(g)}</li>`;lastG=g}list+=itemHTML(o.it,o.i,!!r.wall)}
   if(clar.length)list+=`<li class="grp main">${conc.length?'Уточнить при проектировании':'Что уточнить'}</li>`;
   for(const o of clar)list+=itemHTML(o.it,o.i,!!r.wall);
-  if(!its.length)list=`<li class="empty">${S.filter==='open'?'Все пункты отмечены — помещение готово.':'Нет пунктов по этому фильтру.'}</li>`;
+  if(r.id==='smart'&&!smartOn())list='';
+  else if(!its.length)list=`<li class="empty">${S.filter==='open'?'Все пункты отмечены — помещение готово.':'Нет пунктов по этому фильтру.'}</li>`;
   const filt=`<div class="filters" role="group" aria-label="Фильтр">${[['all','Все'],['must','Обязательные'],['open','Не отмечены']].map(([k,t])=>`<button class="chip${S.filter===k?' on':''}" data-f="${k}">${t}</button>`).join('')}</div>`;
   const legend=`<div class="legend"><span>${kindIcon('s')} 220 В</span><span>${kindIcon('p')} силовая</span><span>${kindIcon('n')} интернет</span><span>${kindIcon('o')} вывод</span><span>${kindIcon('w')} выключатель</span><span>${kindIcon('l')} свет / кабель-канал</span></div>`;
   const sheet=r.wall?`<div class="sheet"><div class="cap"><b>Развёртка</b><span>${esc(r.wall.title)} · высоты в см</span></div><div class="drawing">${drawWall(r)}</div>${legend}<p class="note" style="margin-top:6px">Нажмите на точку — подсветится пункт списка. Цифры на развёртке совпадают с номерами пунктов.</p></div>`:'';
@@ -1026,8 +1044,8 @@ function renderRoom(r){
   const autoBox=auto.length?`<details class="auto"><summary>${auto.length} ${plural(auto.length,'технический пункт принят','технических пункта принято','технических пунктов принято')} по стандарту</summary><ul>${auto.map(i=>`<li>${esc(i.t)}</li>`).join('')}</ul><p class="note">Защиту, линии и сечения подберёт электрик по нормам. Чтобы отмечать их вручную, переключите режим вверху на «Профи».</p></details>`:'';
   const order=railRooms();const ni=order.indexOf(r.id);const next=ni>=0&&ni<order.length-1?ROOMS.find(x=>x.id===order[ni+1]):null;
   const nextBtn=`<div class="startgo" style="margin-top:16px">${next?`<a class="btn primary" href="#${next.id}">Дальше: ${esc(next.name)} →</a>`:`<a class="btn primary" href="#load">Дальше: нагрузка и схема щита →</a>`}</div>`;
-  $('#main').innerHTML=`<div class="room-head"><h2>${esc(r.name)}</h2>${filt}<div class="lead"><p>${esc(r.lead)}</p><p style="font-family:var(--f-mono);font-size:13px">${st.d} из ${st.n} отмечено</p></div></div>${picker}
-  <div class="room-body${r.wall?'':' nodraw'}">${sheet}<div><ul class="items">${list}</ul>${autoBox}${r.table?tableHTML(r.table):''}${nextBtn}</div></div>${toolsHTML()}`;
+  $('#main').innerHTML=`<div class="room-head"><h2>${esc(r.name)}</h2>${filt}<div class="lead"><p>${esc(r.lead)}</p>${r.id==='smart'&&!smartOn()?'':`<p style="font-family:var(--f-mono);font-size:13px">${st.d} из ${st.n} отмечено</p>`}</div></div>${r.id==='smart'?smartBlock(false):''}${picker}
+  <div class="room-body${r.wall?'':' nodraw'}">${sheet}<div><ul class="items">${list}</ul>${autoBox}${r.table&&!(r.id==='smart'&&!smartOn())?tableHTML(r.table):''}${nextBtn}</div></div>${toolsHTML()}`;
 }
 function plural(n,a,b,c){const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c}
 function toolsHTML(){return `<div class="tools"><button class="btn" id="copyOpen">Скопировать незакрытые пункты</button><button class="btn" id="csvBtn">Выгрузить точки в CSV</button><button class="btn" id="resetRoom">Снять отметки в помещении</button><span class="msg" id="toolMsg"></span></div>`}
@@ -1115,6 +1133,8 @@ document.addEventListener('click',async e=>{
   const mb=e.target.closest('[data-mode]');if(mb){const p=curP();const was=p.mode;p.mode=mb.dataset.mode;queueSave();
     if(S.view==='start'){renderAll();if(!was){const st=document.getElementById('lvStep');st&&st.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}}
     else{if(p.mode==='home'&&PRO_ROOMS.has(S.view)){location.hash='#'+railRooms()[0];return}const y=window.scrollY;renderAll();window.scrollTo({top:y})}return}
+  const sm=e.target.closest('[data-smart]');if(sm){smartSt().on=sm.dataset.smart==='on';queueSave();const y=window.scrollY;renderAll();window.scrollTo({top:y});return}
+  const slv=e.target.closest('[data-slv]');if(slv){smartSt().lv=+slv.dataset.slv;queueSave();const y=window.scrollY;renderAll();window.scrollTo({top:y});return}
   const lvb=e.target.closest('[data-lv]');if(lvb){const p=curP();p.level=+lvb.dataset.lv;queueSave();const y=window.scrollY;renderAll();window.scrollTo({top:y});return}
   const sym=e.target.closest('.sym');if(sym){jump(sym.dataset.item);return}
   const f=e.target.closest('[data-f]');if(f){S.filter=f.dataset.f;renderRoom(ROOMS.find(r=>r.id===S.view));return}

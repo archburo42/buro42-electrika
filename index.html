@@ -305,7 +305,7 @@ const ROOMS=[
   {t:'box',x:0,y:0,w:60,h:215,label:'Холодильник',ly:110},
   {t:'box',x:60,y:0,w:60,h:215},
   {t:'box',x:60,y:80,w:60,h:60,label:'Духовка'},
-  {t:'box',x:60,y:145,w:60,h:40,label:'СВЧ',ly:175},
+  {t:'box',x:60,y:145,w:60,h:40,label:'СВЧ',lx:73,ly:173},
   {t:'box',x:120,y:0,w:80,h:90,label:'Мойка',ly:72},
   {t:'box',x:200,y:0,w:60,h:90,label:'ПММ',ly:60},
   {t:'box',x:260,y:0,w:80,h:90,label:'Варочная',ly:60},
@@ -403,7 +403,7 @@ const ROOMS=[
   {t:'zone',x:0,y:0,w:170,h:225,tone:'warn',label:'Зона 1',sub:'до 2,25 м',ly:150},
   {t:'zone',x:170,y:0,w:60,h:225,tone:'warn2',label:'Зона 2',sub:'IPX4',ly:150},
   {t:'zone',x:0,y:0,w:170,h:60,tone:'crit',label:'Зона 0 — в ванне',ly:30},
-  {t:'zone',x:230,y:0,w:200,h:225,tone:'ok',label:'Вне зон',ly:212,nob:1},
+  {t:'zone',x:230,y:0,w:200,h:225,tone:'ok',label:'Вне зон',ly:236,nob:1},
   {t:'box',x:250,y:0,w:100,h:85,label:'Раковина',ly:45},
   {t:'box',x:275,y:110,w:60,h:80,label:'Зеркало'},
   {t:'box',x:360,y:0,w:60,h:85,label:'Стиральная',ly:45,fs:.8},
@@ -534,7 +534,7 @@ const LV_ALL=[1,2,3],LV_STD=[2,3],LV_MAX=[3];
 const LV_OVR={
  'general-6':LV_STD,'general-11':LV_STD,'general-12':LV_ALL,'general-13':LV_STD,'general-15':LV_STD,'general-18':LV_STD,'general-19':LV_STD,'general-20':LV_ALL,'general-21':LV_MAX,
  'hall-3':LV_STD,'hall-4':LV_STD,'hall-5':LV_STD,'hall-8':LV_STD,'hall-9':LV_STD,'hall-10':LV_MAX,'hall-11':LV_STD,'hall-12':LV_STD,'hall-13':LV_STD,
- 'kitchen-11':LV_STD,'kitchen-5':LV_ALL,'kitchen-6':LV_ALL,'kitchen-10':LV_STD,'kitchen-12':LV_STD,'kitchen-13':LV_STD,'kitchen-16':LV_STD,'kitchen-17':LV_MAX,'kitchen-18':LV_MAX,
+ 'kitchen-5':LV_ALL,'kitchen-6':LV_ALL,'kitchen-10':LV_STD,'kitchen-12':LV_STD,'kitchen-13':LV_STD,'kitchen-16':LV_STD,'kitchen-17':LV_MAX,'kitchen-18':LV_MAX,
  'living-3':LV_STD,'living-4':LV_MAX,'living-5':LV_MAX,'living-7':LV_STD,'living-8':LV_STD,'living-10':LV_STD,'living-11':LV_STD,'living-13':LV_STD,'living-14':LV_MAX,'living-15':LV_STD,'living-16':LV_MAX,
  'bedroom-2':LV_STD,'bedroom-3':LV_STD,'bedroom-4':LV_STD,'bedroom-5':LV_STD,'bedroom-6':LV_STD,'bedroom-7':LV_STD,'bedroom-9':LV_STD,'bedroom-10':LV_MAX,'bedroom-12':LV_STD,'bedroom-13':LV_MAX,
  'kids-4':LV_ALL,'kids-5':LV_ALL,'kids-7':LV_ALL,'kids-9':LV_STD,'kids-10':LV_STD,
@@ -641,6 +641,7 @@ function drawWall(r){
   const Y=h=>H-h;
   const p=curP();
   let g='';
+  const badge=(x,y,n)=>`<g class="mark"><text x="${x}" y="${y}" text-anchor="middle" font-family="var(--f-mono)" font-size="${fs*.72}" font-weight="500" fill="var(--coral)" stroke="var(--surface)" stroke-width="${fs*.22}" paint-order="stroke" stroke-linejoin="round">${n}</text></g>`;
   const tones={crit:'var(--crit)',warn:'var(--warn)',warn2:'var(--warn)',ok:'var(--ok)'};
   const ops={crit:.22,warn:.16,warn2:.07,ok:.07};
   // wall outline
@@ -657,9 +658,9 @@ function drawWall(r){
     else if(e.t==='hl')g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--line)" vector-effect="non-scaling-stroke"/>`;
     else if(e.t==='top')g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--muted)" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
     else if(e.t==='hob')g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--olive)" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
-    else if(e.t==='led'&&!BYID[e.item].lv.includes(curLevel())){}
-    else if(e.t==='led')g+=`<g class="sym${p.checks[e.item]?' done':''}" data-item="${e.item}" tabindex="0" role="button" aria-label="${esc(BYID[e.item].t)}"><line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="transparent" stroke-width="${fs}"/><line class="ring mark" x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--coral)" stroke-width="2.2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/></g>`;
-    else if(e.t==='cable')g+=`<g class="sym${p.checks[e.item]?' done':''}" data-item="${e.item}" tabindex="0" role="button" aria-label="${esc(BYID[e.item].t)}"><line x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="transparent" stroke-width="${fs}"/><line class="ring mark" x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="var(--coral)" stroke-width="2.2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/></g>`;
+    else if((e.t==='led'||e.t==='cable')&&!BYID[e.item].lv.includes(curLevel())){}
+    else if(e.t==='led'){const n=r.items.indexOf(BYID[e.item])+1;const bx=(e.x1+e.x2)/2;g+=`<g class="sym${p.checks[e.item]?' done':''}" data-item="${e.item}" tabindex="0" role="button" aria-label="${esc(BYID[e.item].t)}"><line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="transparent" stroke-width="${fs}"/><line class="ring mark" x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--coral)" stroke-width="2.2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/>${badge(bx,Y(e.y)-fs*.7,n)}</g>`}
+    else if(e.t==='cable'){const n=r.items.indexOf(BYID[e.item])+1;g+=`<g class="sym${p.checks[e.item]?' done':''}" data-item="${e.item}" tabindex="0" role="button" aria-label="${esc(BYID[e.item].t)}"><line x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="transparent" stroke-width="${fs}"/><line class="ring mark" x1="${e.x}" x2="${e.x}" y1="${Y(e.y1)}" y2="${Y(e.y2)}" stroke="var(--olive)" stroke-width="3" stroke-dasharray="1.5 3.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>${badge(e.x+fs*.9,Y((e.y1+e.y2)/2),n)}</g>`}
     else if(e.t==='dim'){g+=`<line x1="${e.x1}" x2="${e.x2}" y1="${Y(e.y)}" y2="${Y(e.y)}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><line x1="${e.x1}" x2="${e.x1}" y1="${Y(e.y)-4}" y2="${Y(e.y)+4}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><line x1="${e.x2}" x2="${e.x2}" y1="${Y(e.y)-4}" y2="${Y(e.y)+4}" stroke="var(--muted)" vector-effect="non-scaling-stroke"/><text x="${(e.x1+e.x2)/2}" y="${Y(e.y)+fs*1.3}" text-anchor="middle" font-size="${fs*.85}" fill="var(--muted)">${esc(e.label)}</text>`}
   }
   // floor + ruler
@@ -680,7 +681,7 @@ function drawWall(r){
     // number badge near first point
     const [bx,bh]=it.p[0];
     const num=idx+1;
-    s+=`<g class="mark"><text x="${bx}" y="${Y(bh)-rr*1.9}" text-anchor="middle" font-family="var(--f-mono)" font-size="${fs*.72}" font-weight="500" fill="var(--coral)">${num}</text></g>`;
+    s+=badge(bx,Y(bh)-rr*1.9,num);
     g+=`<g class="sym${p.checks[it.id]?' done':''}" data-item="${it.id}" tabindex="0" role="button" aria-label="${esc(it.t)}">${s}</g>`;
   });
   const vbX=-50, vbY=-fs*2.2, vbW=W.w+80, vbH=H+fs*2.2+(W.zones?fs*3:fs*1.4);
@@ -1063,8 +1064,8 @@ function renderRoom(r){
   if(r.id==='smart'&&!smartOn())list='';
   else if(!its.length)list=`<li class="empty">${S.filter==='open'?'Все пункты отмечены — помещение готово.':'Нет пунктов по этому фильтру.'}</li>`;
   const filt=`<div class="filters" role="group" aria-label="Фильтр">${[['all','Все'],['must','Обязательные'],['open','Не отмечены']].map(([k,t])=>`<button class="chip${S.filter===k?' on':''}" data-f="${k}">${t}</button>`).join('')}</div>`;
-  const legend=`<div class="legend"><span>${kindIcon('s')} 220 В</span><span>${kindIcon('p')} силовая</span><span>${kindIcon('n')} интернет</span><span>${kindIcon('o')} вывод</span><span>${kindIcon('w')} выключатель</span><span>${kindIcon('l')} свет / кабель-канал</span></div>`;
-  const sheet=r.wall?`<div class="sheet"><div class="cap"><b>Развёртка</b><span>${esc(r.wall.title)} · высоты в см</span></div><div class="drawing">${drawWall(r)}</div>${legend}<p class="note" style="margin-top:6px">Нажмите на точку — подсветится пункт списка. Цифры на развёртке совпадают с номерами пунктов.</p></div>`:'';
+  const legend=r.wall?legendHTML(r):'';
+  const sheet=r.wall?`<div class="sheet"><div class="cap"><b>Развёртка</b><span>${esc(r.wall.title)} · высоты в см</span></div><div class="drawing">${drawWall(r)}</div>${legend}<p class="note" style="margin-top:6px">Высоты — от чистового пола до оси розетки или выключателя. Нажмите на точку — подсветится пункт списка; бледные — уже отмечены.</p></div>`:'';
   const auto=autoItems(r);
   const picker='';
   const autoBox=auto.length?`<details class="auto"><summary>${auto.length} ${plural(auto.length,'технический пункт принят','технических пункта принято','технических пунктов принято')} по стандарту</summary><ul>${auto.map(i=>`<li>${esc(i.t)}</li>`).join('')}</ul><p class="note">Защиту, линии и сечения подберёт электрик по нормам. Чтобы отмечать их вручную, переключите режим вверху на «Профи».</p></details>`:'';
@@ -1074,6 +1075,15 @@ function renderRoom(r){
   <div class="room-body${r.wall?'':' nodraw'}">${sheet}<div><ul class="items">${list}</ul>${autoBox}${r.table&&!(r.id==='smart'&&!smartOn())?tableHTML(r.table):''}${nextBtn}</div></div>${toolsHTML()}`;
 }
 function plural(n,a,b,c){const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c}
+function legendHTML(r){const L=curLevel();const ks=new Set();
+  r.items.forEach(it=>{if(it.p&&it.lv.includes(L))it.p.forEach(pt=>ks.add(pt[2]||it.k))});
+  const els=r.wall.els.filter(e=>(e.t==='led'||e.t==='cable')&&BYID[e.item].lv.includes(L));
+  const ln=(st,dash,w,cap)=>`<svg class="kd" viewBox="0 0 18 14" width="18" height="12" aria-hidden="true"><path d="M1 7h16" stroke="${st}" stroke-width="${w}" stroke-dasharray="${dash}"${cap?' stroke-linecap="round"':''}/></svg>`;
+  const L2=[['s','розетка 220 В'],['p','силовая розетка или вывод — отдельная линия'],['n','интернет RJ45 / слаботочка'],['o','вывод кабеля без розетки (светильник, прибор)'],['w','выключатель']].filter(([k])=>ks.has(k)).map(([k,t])=>`<span>${kindIcon(k)} ${t}</span>`);
+  if(els.some(e=>e.t==='led'))L2.push(`<span>${ln('var(--coral)','4 3',2.2)} подсветка, лента</span>`);
+  if(els.some(e=>e.t==='cable'))L2.push(`<span>${ln('var(--olive)','1.5 3.5',3,1)} кабель-канал, гофра</span>`);
+  L2.push(`<span><b style="color:var(--coral);font-family:var(--f-mono);font-weight:500">1</b> номер пункта в списке</span>`);
+  return `<div class="legend">${L2.join('')}</div>`}
 function toolsHTML(){return `<div class="tools"><button class="btn" id="copyOpen">Скопировать незакрытые пункты</button><button class="btn" id="csvBtn">Выгрузить точки в CSV</button><button class="btn" id="resetRoom">Снять отметки в помещении</button><span class="msg" id="toolMsg"></span></div>`}
 
 function renderHeights(){

@@ -1,12 +1,9 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Чек-лист электрики büro42</title>
 <title>Чек-лист электрики büro42</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>
-body{margin:0}[hidden]{display:none!important}img{max-width:100%}
-
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 /* Layout: drafting-table app — rail of rooms on the left, a wall elevation (развёртка) beside its checklist, all on a faint drafting grid */
 :root{
   --bg:#ECEEE6; --surface:#FBFBF7; --ink:#23251A; --muted:#66695A; --line:#D3D6C8; --grid:rgba(78,78,48,.07);
@@ -168,9 +165,19 @@ svg.scheme{display:block;width:100%;min-width:600px;height:auto;font-family:var(
 .plan .i-warn{stroke:var(--warn)}.plan .i-warn path{fill:var(--warn);fill-opacity:.25}
 .plan .i-crit{stroke:var(--crit)}
 .plan .i-ink{stroke:var(--ink)}
-@media (max-width:900px){.levels{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.levels,.levels.modes{grid-template-columns:minmax(0,1fr)}}
 
-.lvwrap{display:flex;align-items:center;gap:8px}
+.lvwrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.levels.modes{grid-template-columns:repeat(2,minmax(0,1fr))}
+.levels.modes .lvt{font-size:26px}
+#lvStep{margin-top:34px}
+@media (max-width:900px){.levels.modes{grid-template-columns:minmax(0,1fr)}.levels.modes .lvt{font-size:22px}}
+li.grp.main{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+li.grp.main:first-child{border-top:0;margin-top:0;padding-top:0}
+details.auto{margin-top:14px;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
+details.auto summary{cursor:pointer;font-weight:500}
+details.auto ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.5}
+.railnote{font-size:12.5px;line-height:1.45;color:var(--muted);margin:8px 10px 4px}
 .lvlab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
 .seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:14px}
@@ -196,6 +203,7 @@ svg.scheme{display:block;width:100%;min-width:600px;height:auto;font-family:var(
 .rqs{display:flex;flex-wrap:wrap;gap:10px 18px}
 .rq{display:flex;align-items:center;gap:8px;font-size:14px}
 .rq input{width:64px;font-family:var(--f-mono)}
+
 @media (max-width:980px){.room-body{grid-template-columns:minmax(0,1fr)}.sheet{position:static}.calc{grid-template-columns:minmax(0,1fr)}.sum{position:static}}
 @media (max-width:760px){
   .layout{grid-template-columns:minmax(0,1fr);gap:14px}
@@ -215,7 +223,7 @@ svg.scheme{display:block;width:100%;min-width:600px;height:auto;font-family:var(
 <div class="wrap">
   <header class="top">
     <div class="brand"><span class="logo">būro<b>42</b></span><h1>Чек-лист электрики</h1></div>
-    <div class="lvwrap"><span class="lvlab">Уровень</span><span id="lvSwitch"></span></div>
+    <div class="lvwrap"><span class="lvlab">Режим</span><span id="modeSwitch"></span><span class="lvlab">Уровень</span><span id="lvSwitch"></span></div>
     <div class="proj">
       <label for="projSel">Проект</label>
       <select id="projSel"></select>
@@ -604,7 +612,7 @@ async function initDb(){
 /* ---------------- HELPERS ---------------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function roomStats(r){const p=curP();const its=visItems(r);const d=its.filter(i=>p.checks[i.id]).length;return {d,n:its.length}}
+function roomStats(r){const p=curP();const its=shownItems(r);const d=its.filter(i=>p.checks[i.id]).length;return {d,n:its.length}}
 function kindIcon(k,size=14){
   const c='var(--ink)';
   const m={s:`<circle cx="7" cy="7" r="5" fill="none" stroke="${c}" stroke-width="1.6"/>`,
@@ -678,13 +686,32 @@ const LEVELS=[
 function curLevel(){const p=curP();return p.level||p.smartLevel||2}
 function smartLevel(){return curLevel()}
 function visItems(r){const L=curLevel();return r.items.filter(i=>!i.lv||i.lv.includes(L))}
+/* ---- mode: home (для себя) / pro ---- */
+function curMode(){return curP().mode||'pro'}
+const isHome=()=>curP().mode==='home';
+const PRO_ROOMS=new Set(['general','light','smart','public','mistakes']);
+const PRO_RX=/УЗО|АВДТ|дифавтомат|лини[яиюей]|IP\d|СУП|гофр|щит|кабел|сечени|терморегулятор|блок питания|DALI|KNX|ПУЭ|СП \d|заземл|автомат/i;
+const isConcrete=it=>!!(it.p||it.h!=null||it.q);
+function isProItem(it){return PRO_ROOMS.has(it.room)||it.k==='x'||(!isConcrete(it)&&(it.k==='p'||PRO_RX.test(it.t)))}
+const isAuto=it=>isHome()&&isProItem(it);
+function shownItems(r){return visItems(r).filter(i=>!isAuto(i))}
+function autoItems(r){return isHome()?visItems(r).filter(isProItem):[]}
+const RAIL=[['Розетки по помещениям',['hall','kitchen','living','bedroom','kids','bath','office','service']],['Основные настройки',['general','light','smart']],['Другое',['public','mistakes']]];
+function railRooms(){return RAIL.flatMap(([g,ids])=>ids).filter(id=>!(isHome()&&PRO_ROOMS.has(id)))}
+const LV_HOME=[['Розетки под технику и мебель','Свет: один-два слоя, обычные выключатели','Простые датчики протечки'],['Всё из «Минимума»','Подсветка, ночной свет, выключатели у кровати','Запас розеток, интернет кабелем, Wi-Fi','Основа умного дома'],['Всё из «Стандарта»','Электрошторы, проектор, встроенная акустика','Скрытые зарядки, розетки в полу','Полный умный дом']];
 function levelSwitch(){const L=curLevel();return `<div class="seg" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button role="radio" aria-checked="${l.n===L}" class="${l.n===L?'on':''}" data-lv="${l.n}">${l.t}</button>`).join('')}</div>`}
+function modeSwitch(){const m=curP().mode;return `<div class="seg" role="radiogroup" aria-label="Режим">${[['home','Для себя'],['pro','Профи']].map(([k,t])=>`<button role="radio" aria-checked="${m===k}" class="${m===k?'on':''}" data-mode="${k}">${t}</button>`).join('')}</div>`}
 function renderStart(){
-  const L=curLevel();
-  const cnt=n=>ALL.filter(i=>i.lv.includes(n)).length;
-  $('#main').innerHTML=`<div class="start"><p class="eyebrow">Шаг 1 из 3</p><h2>Выберите уровень оснащения</h2><p class="startlead">От уровня зависит, какие пункты появятся в чек-листе, на развёртках и в выгрузке. Его можно поменять в любой момент переключателем вверху — отметки сохранятся.</p>
-  <div class="levels big" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button class="lvcard${l.n===L?' on':''}" role="radio" aria-checked="${l.n===L}" data-lv="${l.n}" data-go="1"><span class="lvdots">${[1,2,3].map(i=>`<i class="${i<=l.n?'f':''}"></i>`).join('')}</span><span class="lvt">${l.t}</span><span class="lvs">Бюджет: ${l.b}</span><span class="lvd">${l.d}</span><ul class="lvinc">${l.inc.map(x=>`<li>${x}</li>`).join('')}</ul><span class="lvk"><span>Подходит</span><b>${l.fit}</b></span><span class="lvn">${cnt(l.n)} пунктов</span></button>`).join('')}</div>
-  <div class="startgo"><a class="btn primary" href="#general">Перейти к чек-листу — ${LEVELS[L-1].t.toLowerCase()}</a><span class="msg">Шаг 2: пройдите помещения по порядку слева. Шаг 3: «Нагрузка» и однолинейная схема щита в конце.</span></div></div>`;
+  const p=curP();const L=curLevel();const m=p.mode;const home=m==='home';
+  const cnt=n=>ALL.filter(i=>i.lv.includes(n)&&!(home&&isProItem(i))).length;
+  const modes=[['home','Хочу рассчитать для себя','Ремонт своей квартиры или дома','Только понятные вопросы: где и сколько розеток, выводов и выключателей в каждой комнате. Технические пункты — защита, сечения кабелей, щит — примем по стандарту автоматически, их проверит электрик.'],
+    ['pro','Я профессионал','Дизайнер, архитектор, электрик','Полный чек-лист: нормы ПУЭ и СП 256, отдельные линии и защита, умный дом, общественные помещения, частые ошибки и источники каждого пункта.']];
+  const first=railRooms()[0];
+  $('#main').innerHTML=`<div class="start"><p class="eyebrow">Шаг 1 из 2</p><h2>Кто вы?</h2><p class="startlead">От ответа зависит, насколько подробным будет чек-лист. Режим можно сменить в любой момент переключателем вверху.</p>
+  <div class="levels modes big" role="radiogroup" aria-label="Режим">${modes.map(([k,t,s,d])=>`<button class="lvcard${m===k?' on':''}" role="radio" aria-checked="${m===k}" data-mode="${k}"><span class="lvt">${t}</span><span class="lvs">${s}</span><span class="lvd">${d}</span></button>`).join('')}</div>
+  ${m?`<div id="lvStep"><p class="eyebrow">Шаг 2 из 2</p><h2>Уровень оснащения</h2><p class="startlead">От уровня зависит, какие пункты появятся в чек-листе и на схеме щита. Его тоже можно поменять позже — отметки сохранятся.</p>
+  <div class="levels big" role="radiogroup" aria-label="Уровень оснащения">${LEVELS.map(l=>`<button class="lvcard${l.n===L?' on':''}" role="radio" aria-checked="${l.n===L}" data-lv="${l.n}" data-go="1"><span class="lvdots">${[1,2,3].map(i=>`<i class="${i<=l.n?'f':''}"></i>`).join('')}</span><span class="lvt">${l.t}</span><span class="lvs">Бюджет: ${l.b}</span>${home?'':`<span class="lvd">${l.d}</span>`}<ul class="lvinc">${(home?LV_HOME[l.n-1]:l.inc).map(x=>`<li>${x}</li>`).join('')}</ul><span class="lvk"><span>Подходит</span><b>${l.fit}</b></span><span class="lvn">${cnt(l.n)} пунктов</span></button>`).join('')}</div>
+  <div class="startgo"><a class="btn primary" href="#${first}">Начать с розеток по комнатам →</a><span class="msg">Дальше — помещения по порядку слева, затем «Нагрузка» и схема щита.</span></div></div>`:''}</div>`;
 }
 /* ---- architecture schemes ---- */
 function node(x,y,w,h,t,sub,cls){return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" class="${cls||'nd'}"/><text x="${x+w/2}" y="${y+(sub?h/2-3:h/2+5)}" text-anchor="middle" class="nt">${t}</text>${sub?`<text x="${x+w/2}" y="${y+h/2+14}" text-anchor="middle" class="ns">${sub}</text>`:''}</g>`}
@@ -774,13 +801,13 @@ function planSvg(L){
 /* ---------------- ONE-LINE DIAGRAM ---------------- */
 const STD_A=[6,10,16,20,25,32,40,50,63,80,100,125];
 const pickA=i=>STD_A.find(a=>a>=i)||125;
-const cableFor=a=>a<=10?'3×1,5':a<=16?'3×2,5':a<=20?'3×2,5':a<=25?'3×4':a<=32?'3×6':a<=40?'3×10':'3×16';
+const cableFor=a=>a<=10?'3×1,5':a<=16?'3×2,5':a<=25?'3×4':a<=32?'3×6':a<=40?'3×10':'3×16';
 const ROOMDEF={bed:1,kids:1,bath:1,wc:0,office:0,balcony:1};
 function schemeRooms(p){p.rooms=Object.assign({},ROOMDEF,p.rooms||{});return p.rooms}
 function buildScheme(p){
   const L=curLevel();const R=schemeRooms(p);const c=p.calc||{};const q=id=>+c[id]||0;const kwOf=id=>(APPLIANCES.find(a=>a.id===id)||{kw:0}).kw;
   const G=[];
-  const add=(name,kw,opt={})=>{const I=kw*1000/(230*0.95);let a=opt.a||Math.max(opt.min||10,pickA(I*1.1));G.push({name,kw:+kw.toFixed(2),I:+I.toFixed(1),a,ch:opt.ch||'C',rcd:opt.rcd??30,cable:opt.cable||cableFor(a),kind:opt.kind||'s',res:!!opt.res})};
+  const add=(name,kw,opt={})=>{const I=kw*1000/(230*0.95);let a=Math.max(opt.a||10,pickA(I*1.1));G.push({name,kw:+kw.toFixed(2),I:+I.toFixed(1),a,ch:opt.ch||'C',rcd:opt.rcd??30,cable:opt.cable||cableFor(a),kind:opt.kind||'s',res:!!opt.res})};
   // lighting
   const lights=L===1?[['Освещение: прихожая, кухня, гостиная',0.5],['Освещение: спальни, детская, санузлы',0.4]]
    :L===2?[['Освещение: прихожая, коридор, кухня',0.4],['Освещение: гостиная',0.4],['Освещение: спальни, детская',0.4],['Освещение: санузлы',0.2]]
@@ -805,7 +832,7 @@ function buildScheme(p){
   if(q('dryer'))add('Сушильная машина',kwOf('dryer'),{kind:'p',a:16});
   if(q('boiler'))add('Бойлер',kwOf('boiler'),{kind:'p',a:16});
   for(let i=1;i<=q('floor');i++)add(`Тёплый пол ${q('floor')>1?i:''}`.trim(),kwOf('floor'),{kind:'p',a:16});
-  for(let i=1;i<=q('ac');i++)add(`Кондиционер ${q('ac')>1?i:''}`.trim(),kwOf('ac'),{kind:'p',a:16,rcd:0});
+  for(let i=1;i<=q('ac');i++)add(`Кондиционер ${q('ac')>1?i:''}`.trim(),kwOf('ac'),{kind:'p',a:16});
   // low-current / smart
   add('Слаботочный щит, роутер',0.2,{a:10,ch:'C',kind:'n'});
   if(L>=2){add('Контроллер умного дома, БП',0.15,{a:6,rcd:0,kind:'n'});add('Защита от протечек (через ИБП)',0.05,{a:6,rcd:0,kind:'n'})}
@@ -814,22 +841,26 @@ function buildScheme(p){
   const nres=[2,3,4][L-1];for(let i=0;i<nres;i++)G.push({name:'Резерв',kw:0,I:0,a:16,ch:'C',rcd:0,cable:'—',kind:'r',res:true});
   // input
   const lim=+p.limit||15;const three=lim>15;
-  const Iin=three?lim*1000/(Math.sqrt(3)*400*0.95):lim*1000/(230*0.95);
-  const ain=pickA(Iin);
+  // ток по выделенной мощности (cos φ = 1, как в ТУ); вводной автомат QF0 — ближайший стандартный номинал
+  const Iin=three?lim*1000/(Math.sqrt(3)*400):lim*1000/230;
+  const ain=STD_A.reduce((b,a)=>Math.abs(a-Iin)<Math.abs(b-Iin)?a:b,STD_A[0]);
+  // QS, KV и QD — на ступень выше вводного автомата, чтобы он защищал их от перегрузки
+  const aqs=STD_A.find(a=>a>ain)||ain;
   // phases
   if(three){const ph=[0,0,0];G.filter(g=>!g.res).sort((a,b)=>b.kw-a.kw).forEach(g=>{const k=ph.indexOf(Math.min(...ph));ph[k]+=g.kw;g.ph='L'+(k+1)});G.filter(g=>g.res).forEach((g,i)=>g.ph='L'+(i%3+1));}
   else G.forEach(g=>g.ph='L');
   // codes
   let nQF=0,nQFD=0;G.forEach(g=>{if(g.rcd){g.code='QFD'+(++nQFD)}else g.code='QF'+(++nQF)});
   // modules
-  const mod=G.reduce((s,g)=>s+(g.rcd?2:1),0)+(three?4:2)+(L>=2?(three?4:2):0)+(L>=2?(three?4:3):0)+(three?4:2);
+  // модули: группы (АВДТ — 2) + QS + QD + при «Стандарте» и выше УЗИП с автоматом и реле напряжения
+  const mod=G.reduce((s,g)=>s+(g.rcd?2:1),0)+(three?4:2)+(three?4:2)+(L>=2?(three?4+3:2+1)+(three?6:2):0);
   const need=Math.ceil(mod*1.25);const box=[24,36,48,54,72,96].find(b=>b>=need)||96;
   const inst=G.reduce((s,g)=>s+g.kw,0);
-  return {G,lim,three,ain,Iin,mod,box,inst,L};
+  return {G,lim,three,ain,aqs,Iin,mod,box,inst,L};
 }
 function schemeSvg(S0,p){
-  const {G,three,ain,L}=S0;
-  const colW=62,x0=300,top=40,bus=96,brk=146,tTop=236;
+  const {G,three,ain,aqs,L}=S0;
+  const colW=62,x0=340,top=40,bus=96,brk=146,tTop=236;
   const rowsH=[24,24,24,24,24,24,24,236];
   const rowNames=['Обозначение','Аппарат','Ток утечки','Кабель ВВГнг(А)-LS','P, кВт','I расч., А','Фаза','Потребитель'];
   const W=x0+G.length*colW+30;const tBot=tTop+rowsH.reduce((a,b)=>a+b,0);const H=tBot+110;
@@ -838,16 +869,21 @@ function schemeSvg(S0,p){
   const breaker=(x,y,lab)=>`<path d="M${x} ${y} v10 M${x} ${y+32} v10 M${x} ${y+10} l14 -4" class="sw"/><path d="M${x-4} ${y+6} l8 8 M${x+4} ${y+6} l-8 8" class="sw thin"/><line x1="${x}" y1="${y+32}" x2="${x}" y2="${y+28}" class="sw"/>`;
   // input chain (horizontal) at bus level
   const yIn=bus;
-  g+=T(20,yIn-34,three?'Ввод 3~ 380 В':'Ввод ~230 В',{c:'sth'})+T(20,yIn-18,'от этажного щита',{c:'sts'});
-  g+=`<path d="M20 ${yIn} H300" class="busl"/>`;
-  // QS
-  const blk=(x,lab,sub)=>`<rect x="${x-18}" y="${yIn-16}" width="36" height="32" class="dev"/><text x="${x}" y="${yIn+4}" text-anchor="middle" class="stb">${lab}</text><text x="${x}" y="${yIn+32}" text-anchor="middle" class="sts">${sub}</text>`;
-  g+=blk(70,'QS','');g+=T(70,yIn+44,`${ain} А`,{a:'middle',c:'sts'});
-  g+=blk(120,'Wh','счётчик');
-  let xi=170;
-  if(L>=2){g+=`<path d="M${xi} ${yIn} V${yIn+40}" class="sw"/><rect x="${xi-12}" y="${yIn+40}" width="24" height="30" class="dev"/><text x="${xi}" y="${yIn+60}" text-anchor="middle" class="stb">FV</text><path d="M${xi} ${yIn+70} v10 M${xi-10} ${yIn+80} h20 M${xi-6} ${yIn+85} h12 M${xi-2} ${yIn+90} h4" class="sw"/>${T(xi+16,yIn+58,'УЗИП',{c:'sts'})}`;xi+=50;
-    g+=blk(xi,'KV','реле напр.');xi+=50}
-  g+=blk(Math.max(xi,250),'QD','100 мА');
+  g+=T(20,yIn-76,three?'Ввод 3~ 380 В':'Ввод ~230 В',{c:'sth'})+T(20,yIn-61,`${S0.lim} кВт по ТУ`,{c:'sts'});
+  g+=`<path d="M20 ${yIn} H${x0}" class="busl"/>`;
+  const blk=(x,lab,sub,rat)=>`<rect x="${x-18}" y="${yIn-16}" width="36" height="32" class="dev"/><text x="${x}" y="${yIn+4}" text-anchor="middle" class="stb">${lab}</text><text x="${x}" y="${yIn+32}" text-anchor="middle" class="sts">${sub}</text>${rat?`<text x="${x}" y="${yIn+44}" text-anchor="middle" class="sts">${rat}</text>`:''}`;
+  // floor panel: QF0 + meter
+  g+=`<rect x="26" y="${yIn-32}" width="108" height="86" class="dev dash"/>`+T(30,yIn-36,'Этажный щит',{c:'sts'});
+  g+=blk(56,'QF0','ввод',`${ain} А`);
+  g+=blk(104,'Wh','счётчик','');
+  // apartment panel
+  g+=`<rect x="146" y="${yIn-32}" width="${x0-150}" height="86" class="dev dash"/>`+T(150,yIn-36,'Щит квартиры ЩК',{c:'sts'});
+  g+=blk(176,'QS','выкл. нагр.',`${aqs} А`);
+  let xi=214;
+  if(L>=2){g+=`<path d="M${xi} ${yIn} V${yIn+62}" class="sw"/><path d="M${xi} ${yIn+62} l9 -12" class="sw"/><path d="M${xi-3} ${yIn+58} l6 6 M${xi+3} ${yIn+58} l-6 6" class="sw thin"/><path d="M${xi} ${yIn+66} V${yIn+72}" class="sw"/>`+T(xi+12,yIn+66,'C25',{c:'sts'});
+    g+=`<rect x="${xi-12}" y="${yIn+72}" width="24" height="26" class="dev"/><text x="${xi}" y="${yIn+90}" text-anchor="middle" class="stb">FV</text><path d="M${xi} ${yIn+98} v8 M${xi-10} ${yIn+106} h20 M${xi-6} ${yIn+111} h12 M${xi-2} ${yIn+116} h4" class="sw"/>${T(xi+16,yIn+90,'УЗИП',{c:'sts'})}`;
+    g+=blk(254,'KV','реле напр.',`${aqs} А`);}
+  g+=blk(L>=2?300:250,'QD','100 мА',`${aqs} А`);
   // bus
   g+=`<path d="M${x0-20} ${bus} H${W-20}" class="busl"/>`+T(x0+6,bus-10,three?'L1, L2, L3, N, PE':'L, N, PE',{c:'sts'});
   // columns
@@ -874,11 +910,12 @@ function schemeSvg(S0,p){
   g+=T(bx+10,by+18,'Однолинейная схема щита ЩК (эскиз)',{c:'sth'})+T(bx+310,by+18,'büro42',{c:'sth'});
   g+=T(bx+10,by+44,`Проект: ${p.name}`.slice(0,48),{c:'st'})+T(bx+10,by+64,`Уровень: ${LEVELS[L-1].t} · ${ds}`,{c:'sts'});
   g+=T(bx+310,by+44,'Стадия: эскиз',{c:'sts'})+T(bx+310,by+64,'Не для монтажа',{c:'sts'});
-  g+=T(20,by+18,'QF — автоматический выключатель · QFD — АВДТ (дифавтомат) · QD — УЗО · QS — выключатель нагрузки',{c:'sts'});
-  g+=T(20,by+36,'Wh — счётчик · FV — УЗИП · KV — реле напряжения · ΔI — защита от тока утечки',{c:'sts'});
+  g+=T(20,by+18,'QF0 — вводной автомат по ТУ · QS — выключатель нагрузки · QD — УЗО противопожарное, тип S',{c:'sts'});
+  g+=T(20,by+36,'QF — автоматический выключатель · QFD — АВДТ (дифавтомат) · ΔI — защита от тока утечки',{c:'sts'});
+  g+=T(20,by+54,'Wh — счётчик · FV — УЗИП класса II со своим автоматом · KV — реле напряжения',{c:'sts'});
   return {svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="ols" font-family="Arial, sans-serif">${g}</svg>`,W,H};
 }
-const OLS_CSS=`.ols{background:#fff}.ols .st{font-size:11px;fill:#23251A}.ols .stb{font-size:11px;font-weight:700;fill:#23251A}.ols .sts{font-size:10px;fill:#66695A}.ols .sth{font-size:12px;font-weight:700;fill:#23251A}.ols .sth2{font-size:10.5px;fill:#23251A}.ols .sw{stroke:#23251A;stroke-width:1.4;fill:none}.ols .sw.thin{stroke-width:1}.ols .dash{stroke-dasharray:4 3}.ols .busl{stroke:#23251A;stroke-width:3;fill:none}.ols .dev{fill:#fff;stroke:#23251A;stroke-width:1.2}.ols .rcd{stroke:#D9534F}.ols .grid{stroke:#23251A;stroke-width:1}.ols .gridl{stroke:#B9BCAD;stroke-width:.8}.ols .stamp{fill:none;stroke:#23251A;stroke-width:1.4}.ols .resg{opacity:.55}`;
+const OLS_CSS=`.ols{background:#fff}.ols .st{font-size:11px;fill:#23251A}.ols .stb{font-size:11px;font-weight:700;fill:#23251A}.ols .sts{font-size:10px;fill:#66695A}.ols .sth{font-size:12px;font-weight:700;fill:#23251A}.ols .sth2{font-size:10.5px;fill:#23251A}.ols .sw{stroke:#23251A;stroke-width:1.4;fill:none}.ols .sw.thin{stroke-width:1}.ols .dash{stroke-dasharray:4 3}.ols .busl{stroke:#23251A;stroke-width:3;fill:none}.ols .dev{fill:#fff;stroke:#23251A;stroke-width:1.2}.ols .dev.dash{fill:none;stroke:#8A8D7C}.ols .rcd{stroke:#D9534F}.ols .grid{stroke:#23251A;stroke-width:1}.ols .gridl{stroke:#B9BCAD;stroke-width:.8}.ols .stamp{fill:none;stroke:#23251A;stroke-width:1.4}.ols .resg{opacity:.55}`;
 function renderScheme(){
   const p=curP();const R=schemeRooms(p);const S0=buildScheme(p);const {svg}=schemeSvg(S0,p);
   const real=S0.G.filter(g=>!g.res);
@@ -890,16 +927,17 @@ function renderScheme(){
   <div class="olsum">
    <div><span>Ввод</span><b>${S0.three?'3 фазы, 380 В':'1 фаза, 230 В'}</b></div>
    <div><span>Выделенная мощность</span><b>${S0.lim} кВт</b></div>
-   <div><span>Вводной аппарат</span><b>${S0.ain} А</b></div>
+   <div><span>Вводной автомат</span><b>${S0.ain} А</b></div>
    <div><span>Расчётная нагрузка</span><b>${est.toFixed(1)} кВт</b></div>
    <div><span>Групп</span><b>${real.length} + ${S0.G.length-real.length} резерв</b></div>
    <div><span>Щит</span><b>от ${S0.box} модулей</b></div>
   </div>
   <div class="olswrap">${svg}</div>
   <div class="panel"><h4>Спецификация щита (предварительно)</h4><div class="tbl"><table><tbody>
-   <tr><td>Выключатель нагрузки QS</td><td class="n">1 × ${S0.ain} А${S0.three?' 4P':' 2P'}</td></tr>
-   <tr><td>УЗО противопожарное QD</td><td class="n">1 × ${S0.ain} А, 100 мА, тип S</td></tr>
-   ${S0.L>=2?`<tr><td>УЗИП FV, реле напряжения KV</td><td class="n">по 1 шт.</td></tr>`:''}
+   <tr><td>Вводной автомат QF0 (в этажном щите, по ТУ)</td><td class="n">${S0.three?'3P':'1P / 2P'} ${S0.ain} А</td></tr>
+   <tr><td>Выключатель нагрузки QS</td><td class="n">1 × ${S0.aqs} А${S0.three?' 4P':' 2P'}</td></tr>
+   <tr><td>УЗО противопожарное QD</td><td class="n">1 × ${S0.aqs} А, 100 мА, тип S (селективное)${S0.three?', 4P':', 2P'}</td></tr>
+   ${S0.L>=2?`<tr><td>УЗИП FV + автомат защиты УЗИП</td><td class="n">класс II (Т2)${S0.three?', 3P+N':', 1P+N'}; автомат C25 или по паспорту УЗИП</td></tr><tr><td>Реле напряжения KV</td><td class="n">${S0.three?'3 × 1Ф или 1 × 3Ф':'1 ×'} ≥ ${S0.aqs} А</td></tr>`:''}
    <tr><td>Автоматические выключатели QF</td><td class="n">${cntBy(g=>!g.rcd)}</td></tr>
    <tr><td>Дифавтоматы QFD</td><td class="n">${cntBy(g=>g.rcd)}</td></tr>
    <tr><td>Корпус щита</td><td class="n">${S0.box} модулей (занято ~${S0.mod}, запас 25%)</td></tr>
@@ -918,17 +956,18 @@ function exportOlsCsv(){const p=curP();const S0=buildScheme(p);const q=v=>'"'+St
 
 /* ---------------- RENDER ---------------- */
 function renderRail(){
-  const groups={};ROOMS.forEach(r=>(groups[r.grp]=groups[r.grp]||[]).push(r));
-  let h=`<h3>Начало</h3><a href="#start" class="${S.view==='start'?'on':''}"><span>Уровень оснащения</span><span class="cnt">${LEVELS[curLevel()-1].t}</span></a>`;
-  for(const [g,rs] of Object.entries(groups)){
+  const home=isHome();const m=curP().mode;
+  let h=`<h3>Начало</h3><a href="#start" class="${S.view==='start'?'on':''}"><span>Режим и уровень</span><span class="cnt">${m?(home?'для себя':'профи')+' · ':''}${LEVELS[curLevel()-1].t.toLowerCase()}</span></a>`;
+  for(const [g,ids] of RAIL){const rs=ids.filter(id=>!(home&&PRO_ROOMS.has(id))).map(id=>ROOMS.find(r=>r.id===id));if(!rs.length)continue;
     h+=`<h3>${esc(g)}</h3>`;
     for(const r of rs){const st=roomStats(r);h+=`<a href="#${r.id}" class="${S.view===r.id?'on':''}"><span>${esc(r.name)}</span><span class="cnt">${st.d}/${st.n}</span><span class="bar"><i style="width:${st.n?st.d/st.n*100:0}%"></i></span></a>`}
   }
-  h+=`<h3>Инструменты</h3><a href="#heights" class="${S.view==='heights'?'on':''}"><span>Шкала высот</span><span class="cnt"></span></a><a href="#load" class="${S.view==='load'?'on':''}"><span>Нагрузка</span><span class="cnt"></span></a><h3>Итог</h3><a href="#scheme" class="${S.view==='scheme'?'on':''}"><span>Однолинейная схема</span><span class="cnt">бонус</span></a>`;
+  if(home)h+=`<p class="railnote">Общие правила, освещение, умный дом и проверка ошибок приняты по стандарту — их проверит электрик.</p>`;
+  h+=`<h3>Расчёт и итог</h3><a href="#load" class="${S.view==='load'?'on':''}"><span>Нагрузка</span><span class="cnt"></span></a><a href="#scheme" class="${S.view==='scheme'?'on':''}"><span>Однолинейная схема</span><span class="cnt">бонус</span></a><a href="#heights" class="${S.view==='heights'?'on':''}"><span>Шкала высот</span><span class="cnt"></span></a>`;
   $('#rail').innerHTML=h;
 }
 function renderTotal(){
-  const p=curP();const vis=ROOMS.flatMap(visItems);const d=vis.filter(i=>p.checks[i.id]).length;
+  const p=curP();const vis=ROOMS.flatMap(shownItems);const d=vis.filter(i=>p.checks[i.id]).length;
   $('#ring').setAttribute('stroke-dasharray',`${d/vis.length*100} 100`);
   $('#totalNum').textContent=`${d}/${vis.length}`;
 }
@@ -945,9 +984,10 @@ function itemHTML(it,idx,showNum){
   const tags=[];
   if(it.h!=null)tags.push(`<span class="tag h">${it.h} см</span>`);
   if(it.q)tags.push(`<span class="tag">${it.q} шт.</span>`);
-  tags.push(`<span class="tag">${kindIcon(it.k,12)} ${KIND[it.k]}</span>`);
+  const home=isHome();
+  if(!home)tags.push(`<span class="tag">${kindIcon(it.k,12)} ${KIND[it.k]}</span>`);
   if(it.m)tags.push(`<span class="tag must">обязательно</span>`);
-  tags.push(`<span class="tag src">${SRC[it.s]}</span>`);
+  if(!home)tags.push(`<span class="tag src">${SRC[it.s]}</span>`);
   const num=showNum&&it.p?`<b style="color:var(--coral);font-family:var(--f-mono);font-weight:500;margin-right:6px">${idx+1}</b>`:'';
   return `<li class="it${done?' done':''}" data-item="${it.id}"><button class="cb" data-tg="${it.id}" role="checkbox" aria-checked="${done}" aria-label="Отметить: ${esc(it.t)}"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3L11.5 4" fill="none" stroke="var(--olive-ink)" stroke-width="2"/></svg></button><div class="txt">${num}${esc(it.t)}${it.e?` <button class="info" data-info="${it.id}" aria-expanded="${!!S.open[it.id]}" aria-label="Пояснение" title="Пояснение">i</button>`:''}</div><div class="meta">${tags.join('')}</div>${it.e?`<div class="expl"${S.open[it.id]?'':' hidden'} id="ex-${it.id}">${esc(it.e)}</div>`:''}</li>`;
 }
@@ -965,26 +1005,35 @@ function tableHTML(kind){
 }
 function renderRoom(r){
   const p=curP();
-  let its=visItems(r).map((it)=>({it,i:r.items.indexOf(it)}));
+  let its=shownItems(r).map((it)=>({it,i:r.items.indexOf(it)}));
   if(S.filter==='must')its=its.filter(o=>o.it.m);
   if(S.filter==='open')its=its.filter(o=>!p.checks[o.it.id]);
   const st=roomStats(r);
   let list='';let lastG=null;
   // groups: an item's g starts a group that continues until next g
   let curG=null;const gOf={};r.items.forEach(it=>{if(it.g)curG=it.g;gOf[it.id]=curG});
-  for(const o of its){const g=gOf[o.it.id];if(g&&g!==lastG){list+=`<li class="grp">${esc(g)}</li>`;lastG=g}list+=itemHTML(o.it,o.i,!!r.wall)}
+  const conc=its.filter(o=>isConcrete(o.it)),clar=its.filter(o=>!isConcrete(o.it));
+  if(conc.length&&clar.length)list+=`<li class="grp main">Розетки, выводы и выключатели</li>`;
+  for(const o of conc){const g=gOf[o.it.id];if(g&&g!==lastG){list+=`<li class="grp">${esc(g)}</li>`;lastG=g}list+=itemHTML(o.it,o.i,!!r.wall)}
+  if(clar.length)list+=`<li class="grp main">${conc.length?'Уточнить при проектировании':'Что уточнить'}</li>`;
+  for(const o of clar)list+=itemHTML(o.it,o.i,!!r.wall);
   if(!its.length)list=`<li class="empty">${S.filter==='open'?'Все пункты отмечены — помещение готово.':'Нет пунктов по этому фильтру.'}</li>`;
   const filt=`<div class="filters" role="group" aria-label="Фильтр">${[['all','Все'],['must','Обязательные'],['open','Не отмечены']].map(([k,t])=>`<button class="chip${S.filter===k?' on':''}" data-f="${k}">${t}</button>`).join('')}</div>`;
   const legend=`<div class="legend"><span>${kindIcon('s')} 220 В</span><span>${kindIcon('p')} силовая</span><span>${kindIcon('n')} интернет</span><span>${kindIcon('o')} вывод</span><span>${kindIcon('w')} выключатель</span><span>${kindIcon('l')} свет / кабель-канал</span></div>`;
   const sheet=r.wall?`<div class="sheet"><div class="cap"><b>Развёртка</b><span>${esc(r.wall.title)} · высоты в см</span></div><div class="drawing">${drawWall(r)}</div>${legend}<p class="note" style="margin-top:6px">Нажмите на точку — подсветится пункт списка. Цифры на развёртке совпадают с номерами пунктов.</p></div>`:'';
+  const auto=autoItems(r);
   const picker='';
+  const autoBox=auto.length?`<details class="auto"><summary>${auto.length} ${plural(auto.length,'технический пункт принят','технических пункта принято','технических пунктов принято')} по стандарту</summary><ul>${auto.map(i=>`<li>${esc(i.t)}</li>`).join('')}</ul><p class="note">Защиту, линии и сечения подберёт электрик по нормам. Чтобы отмечать их вручную, переключите режим вверху на «Профи».</p></details>`:'';
+  const order=railRooms();const ni=order.indexOf(r.id);const next=ni>=0&&ni<order.length-1?ROOMS.find(x=>x.id===order[ni+1]):null;
+  const nextBtn=`<div class="startgo" style="margin-top:16px">${next?`<a class="btn primary" href="#${next.id}">Дальше: ${esc(next.name)} →</a>`:`<a class="btn primary" href="#load">Дальше: нагрузка и схема щита →</a>`}</div>`;
   $('#main').innerHTML=`<div class="room-head"><h2>${esc(r.name)}</h2>${filt}<div class="lead"><p>${esc(r.lead)}</p><p style="font-family:var(--f-mono);font-size:13px">${st.d} из ${st.n} отмечено</p></div></div>${picker}
-  <div class="room-body${r.wall?'':' nodraw'}">${sheet}<div><ul class="items">${list}</ul>${r.table?tableHTML(r.table):''}</div></div>${toolsHTML()}`;
+  <div class="room-body${r.wall?'':' nodraw'}">${sheet}<div><ul class="items">${list}</ul>${autoBox}${r.table?tableHTML(r.table):''}${nextBtn}</div></div>${toolsHTML()}`;
 }
+function plural(n,a,b,c){const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c}
 function toolsHTML(){return `<div class="tools"><button class="btn" id="copyOpen">Скопировать незакрытые пункты</button><button class="btn" id="csvBtn">Выгрузить точки в CSV</button><button class="btn" id="resetRoom">Снять отметки в помещении</button><span class="msg" id="toolMsg"></span></div>`}
 
 function renderHeights(){
-  const pts=ALL.filter(i=>i.h!=null&&i.lv.includes(curLevel())).map(i=>({...i,rn:ROOMS.find(r=>r.id===i.room).name}));
+  const pts=ROOMS.flatMap(shownItems).filter(i=>i.h!=null).map(i=>({...i,rn:ROOMS.find(r=>r.id===i.room).name}));
   const levels={};pts.forEach(i=>(levels[i.h]=levels[i.h]||[]).push(i));
   const hs=Object.keys(levels).map(Number).sort((a,b)=>a-b);
   // layout rows with min spacing
@@ -1039,7 +1088,7 @@ function updSum(){
 
 function renderAll(){
   renderProj();renderTotal();renderRail();
-  $('#lvSwitch').innerHTML=levelSwitch();
+  $('#lvSwitch').innerHTML=levelSwitch();$('#modeSwitch').innerHTML=modeSwitch();
   if(S.view==='start')renderStart();else if(S.view==='scheme')renderScheme();else if(S.view==='heights')renderHeights();else if(S.view==='load')renderLoad();
   else{const r=ROOMS.find(x=>x.id===S.view)||ROOMS[0];renderRoom(r)}
 }
@@ -1063,6 +1112,9 @@ function jump(id){const li=document.querySelector(`li.it[data-item="${CSS.escape
 document.addEventListener('click',async e=>{
   const tg=e.target.closest('[data-tg]');if(tg){toggle(tg.dataset.tg);return}
   const inf=e.target.closest('[data-info]');if(inf){const id=inf.dataset.info;S.open[id]=!S.open[id];const ex=document.getElementById('ex-'+id);if(ex)ex.hidden=!S.open[id];inf.setAttribute('aria-expanded',!!S.open[id]);inf.classList.toggle('on',!!S.open[id]);return}
+  const mb=e.target.closest('[data-mode]');if(mb){const p=curP();const was=p.mode;p.mode=mb.dataset.mode;queueSave();
+    if(S.view==='start'){renderAll();if(!was){const st=document.getElementById('lvStep');st&&st.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}}
+    else{if(p.mode==='home'&&PRO_ROOMS.has(S.view)){location.hash='#'+railRooms()[0];return}const y=window.scrollY;renderAll();window.scrollTo({top:y})}return}
   const lvb=e.target.closest('[data-lv]');if(lvb){const p=curP();p.level=+lvb.dataset.lv;queueSave();const y=window.scrollY;renderAll();window.scrollTo({top:y});return}
   const sym=e.target.closest('.sym');if(sym){jump(sym.dataset.item);return}
   const f=e.target.closest('[data-f]');if(f){S.filter=f.dataset.f;renderRoom(ROOMS.find(r=>r.id===S.view));return}
@@ -1097,13 +1149,13 @@ function updSumSoft(keepLim){const f=document.activeElement&&document.activeElem
 function createProj(){const n=($('#newName')||{}).value;const name=(n||'').trim()||'Новый проект';const calc={};APPLIANCES.forEach(a=>calc[a.id]=a.def);
   const p={id:uid(),name:name.slice(0,80),checks:{},calc,limit:15,updated:Date.now()};S.projects.unshift(p);S.cur=p.id;S.newMode=false;renderAll();queueSave()}
 
-function openLines(){const p=curP();const out=[];ROOMS.forEach(r=>{const o=visItems(r).filter(i=>!p.checks[i.id]);if(o.length){out.push(r.name.toUpperCase());o.forEach(i=>out.push('☐ '+i.t+(i.h!=null?` (${i.h} см)`:'')+(i.m?' — обязательно':'')));out.push('')}});return out.join('\n')}
+function openLines(){const p=curP();const out=[];ROOMS.forEach(r=>{const o=shownItems(r).filter(i=>!p.checks[i.id]);if(o.length){out.push(r.name.toUpperCase());o.forEach(i=>out.push('☐ '+i.t+(i.h!=null?` (${i.h} см)`:'')+(i.m?' — обязательно':'')));out.push('')}});return out.join('\n')}
 async function copyOpen(){const txt=`${curP().name} — незакрытые пункты\n\n`+openLines();const m=$('#toolMsg');
   try{await navigator.clipboard.writeText(txt);m.textContent='Скопировано в буфер обмена'}catch(e){const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='width:100%;height:160px;margin-top:8px';m.textContent='Не удалось скопировать автоматически — выделите текст ниже:';m.after(ta);ta.select()}}
 async function exportCsv(){const p=curP();const m=$('#toolMsg');
   const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const rows=[['Помещение','№','Пункт','Высота, см','Кол-во','Тип','Обязательно','Источник','Отмечено'].map(q).join(';')];
-  ROOMS.forEach(r=>visItems(r).forEach((i,ix)=>rows.push([r.name,ix+1,i.t,i.h??'',i.q??'',KIND[i.k],i.m?'да':'',SRC[i.s],p.checks[i.id]?'да':''].map(q).join(';'))));
+  ROOMS.forEach(r=>visItems(r).forEach((i,ix)=>rows.push([r.name,ix+1,i.t,i.h??'',i.q??'',KIND[i.k],i.m?'да':'',SRC[i.s],p.checks[i.id]?'да':isAuto(i)?'принято по стандарту':''].map(q).join(';'))));
   const data='﻿'+rows.join('\r\n');
   return dlSave(`электрика — ${p.name}.csv`,data);}
 function resetRoom(btn){const m=$('#toolMsg');if(!btn.dataset.sure){btn.dataset.sure='1';btn.textContent='Точно снять все отметки?';btn.classList.add('danger');return}

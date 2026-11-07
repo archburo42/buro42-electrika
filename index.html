@@ -177,6 +177,10 @@ li.grp.main:first-child{border-top:0;margin-top:0;padding-top:0}
 .smartbox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);margin:0 0 18px}
 .smartsw{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;font-weight:500}
 .smartbox .levels{margin:0}
+.olchk{margin:0 0 14px;display:grid;gap:6px}
+.olchk .ck{margin:0;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.olchk .ck.crit{border-color:var(--crit);color:var(--crit)}.olchk .ck.warn{border-color:var(--warn)}.olchk .ck.ok{border-color:var(--ok)}
+.olchk .ck b{margin-right:6px}
 details.auto{margin-top:14px;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
 details.auto summary{cursor:pointer;font-weight:500}
 details.auto ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.5}
@@ -529,14 +533,14 @@ ROOMS.forEach(r=>r.items.forEach((it,i)=>{it.id=r.id+'-'+(i+1);it.room=r.id}));
 const LV_ALL=[1,2,3],LV_STD=[2,3],LV_MAX=[3];
 const LV_OVR={
  'general-6':LV_STD,'general-11':LV_STD,'general-12':LV_ALL,'general-13':LV_STD,'general-15':LV_STD,'general-18':LV_STD,'general-19':LV_STD,'general-20':LV_ALL,'general-21':LV_MAX,
- 'hall-4':LV_STD,'hall-5':LV_ALL,'hall-8':LV_STD,'hall-9':LV_STD,'hall-10':LV_MAX,'hall-11':LV_STD,'hall-12':LV_STD,'hall-13':LV_STD,
- 'kitchen-5':LV_ALL,'kitchen-6':LV_ALL,'kitchen-10':LV_STD,'kitchen-12':LV_STD,'kitchen-13':LV_STD,'kitchen-16':LV_STD,'kitchen-17':LV_MAX,'kitchen-18':LV_MAX,
- 'living-4':LV_MAX,'living-5':LV_MAX,'living-7':LV_ALL,'living-8':LV_STD,'living-10':LV_STD,'living-11':LV_STD,'living-13':LV_STD,'living-14':LV_MAX,'living-15':LV_STD,'living-16':LV_MAX,
- 'bedroom-4':LV_STD,'bedroom-5':LV_STD,'bedroom-6':LV_ALL,'bedroom-7':LV_STD,'bedroom-9':LV_STD,'bedroom-10':LV_MAX,'bedroom-12':LV_STD,'bedroom-13':LV_MAX,
+ 'hall-3':LV_STD,'hall-4':LV_STD,'hall-5':LV_STD,'hall-8':LV_STD,'hall-9':LV_STD,'hall-10':LV_MAX,'hall-11':LV_STD,'hall-12':LV_STD,'hall-13':LV_STD,
+ 'kitchen-11':LV_STD,'kitchen-5':LV_ALL,'kitchen-6':LV_ALL,'kitchen-10':LV_STD,'kitchen-12':LV_STD,'kitchen-13':LV_STD,'kitchen-16':LV_STD,'kitchen-17':LV_MAX,'kitchen-18':LV_MAX,
+ 'living-3':LV_STD,'living-4':LV_MAX,'living-5':LV_MAX,'living-7':LV_STD,'living-8':LV_STD,'living-10':LV_STD,'living-11':LV_STD,'living-13':LV_STD,'living-14':LV_MAX,'living-15':LV_STD,'living-16':LV_MAX,
+ 'bedroom-2':LV_STD,'bedroom-3':LV_STD,'bedroom-4':LV_STD,'bedroom-5':LV_STD,'bedroom-6':LV_STD,'bedroom-7':LV_STD,'bedroom-9':LV_STD,'bedroom-10':LV_MAX,'bedroom-12':LV_STD,'bedroom-13':LV_MAX,
  'kids-4':LV_ALL,'kids-5':LV_ALL,'kids-7':LV_ALL,'kids-9':LV_STD,'kids-10':LV_STD,
  'bath-3':LV_STD,'bath-5':LV_STD,'bath-6':LV_ALL,'bath-7':LV_ALL,'bath-8':LV_STD,'bath-9':LV_MAX,'bath-11':LV_STD,'bath-14':LV_STD,
  'office-3':LV_MAX,'office-5':LV_MAX,'office-6':LV_STD,
- 'service-2':LV_STD,'service-3':LV_STD,'service-5':LV_STD,'service-6':LV_STD,'service-9':LV_STD,'service-10':LV_STD,
+ 'service-1':LV_STD,'service-2':LV_STD,'service-3':LV_STD,'service-5':LV_STD,'service-6':LV_STD,'service-9':LV_STD,'service-10':LV_STD,
  'light-5':LV_STD,'light-7':LV_MAX,
  'public-4':LV_ALL,'public-7':LV_STD,'public-14':LV_STD,'mistakes-12':LV_ALL
 };
@@ -562,7 +566,10 @@ const APPLIANCES=[
  {id:'hair',n:'Фен',kw:1.8,line:0,def:1},
  {id:'light',n:'Освещение всей квартиры',kw:0.8,line:0,def:1},
  {id:'it',n:'Компьютер, ТВ, роутер',kw:0.8,line:0,def:1},
- {id:'towel',n:'Электрический полотенцесушитель',kw:0.3,line:0,def:1}
+ {id:'towel',n:'Электрический полотенцесушитель',kw:0.3,line:0,def:1},
+ {id:'flow',n:'Проточный водонагреватель',kw:6.0,line:1,def:0},
+ {id:'gasb',n:'Газовый котёл (электроника, насос)',kw:0.15,line:1,def:0},
+ {id:'ev',n:'Зарядка электросамоката / велосипеда',kw:0.5,line:1,def:0}
 ];
 
 /* ---------------- STATE / STORAGE ---------------- */
@@ -831,7 +838,10 @@ function buildScheme(p){
   // sockets
   add('Розетки: кухня, фартук',2.5,{a:16,kind:'s'});
   if(L>=2)add('Розетки: холодильник, СВЧ, вытяжка',1.5,{a:16});
-  if(L===1){add('Розетки: прихожая, гостиная',1.8,{a:16});add('Розетки: спальни, детская, кабинет',1.8,{a:16})}
+  if(L===1){add(`Розетки: прихожая, гостиная${R.balcony?', балкон (IP44)':''}`,1.8,{a:16});
+    // жилые комнаты: не больше двух комнат на одну розеточную группу
+    const rr=[...Array(R.bed).fill('спальня'),...Array(R.kids).fill('детская'),...(R.office?['кабинет']:[])];
+    for(let i=0;i<rr.length;i+=2)add('Розетки: '+[...new Set(rr.slice(i,i+2))].join(', '),1.8,{a:16})}
   else{add('Розетки: прихожая, коридор',1.2,{a:16});add('Розетки: гостиная, ТВ-зона',1.8,{a:16});
     for(let i=1;i<=R.bed;i++)add(`Розетки: спальня ${R.bed>1?i:''}`.trim(),1.5,{a:16});
     for(let i=1;i<=R.kids;i++)add(`Розетки: детская ${R.kids>1?i:''}`.trim(),1.5,{a:16});
@@ -847,6 +857,9 @@ function buildScheme(p){
   if(q('dryer'))add('Сушильная машина',kwOf('dryer'),{kind:'p',a:16});
   if(q('boiler'))add('Бойлер',kwOf('boiler'),{kind:'p',a:16});
   for(let i=1;i<=q('floor');i++)add(`Тёплый пол ${q('floor')>1?i:''}`.trim(),kwOf('floor'),{kind:'p',a:16});
+  if(q('flow'))add('Проточный водонагреватель',kwOf('flow'),{kind:'p'});
+  if(q('gasb'))add('Газовый котёл (через стабилизатор)',kwOf('gasb'),{kind:'p',a:10});
+  if(q('ev'))add('Зарядка самоката / велосипеда',kwOf('ev'),{kind:'p',a:16});
   for(let i=1;i<=q('ac');i++)add(`Кондиционер ${q('ac')>1?i:''}`.trim(),kwOf('ac'),{kind:'p',a:16});
   // low-current / smart
   add('Слаботочный щит, роутер',0.2,{a:10,ch:'C',kind:'n'});
@@ -873,7 +886,19 @@ function buildScheme(p){
   const smartMod=[0,0,8,12][SL];// место под реле/контроллер (Стандарт) или актуаторы KNX (Максимум)
   const need=Math.ceil(mod*1.25)+smartMod;const box=[24,36,48,54,72,96].find(b=>b>=need)||96;
   const inst=G.reduce((s,g)=>s+g.kw,0);
-  return {G,lim,three,ain,aqs,Iin,mod,box,inst,L};
+  // проверки
+  const warn=[];const real=G.filter(g=>!g.res);
+  // расчётная нагрузка — тем же способом, что во вкладке «Нагрузка» (по приборам), чтобы цифры совпадали
+  const instA=APPLIANCES.reduce((t,a)=>t+a.kw*q(a.id),0);const est=instA*(instA>14?0.45:instA>8?0.55:0.65);
+  if(est>lim)warn.push(['crit',`Расчётная нагрузка ${est.toFixed(1)} кВт больше выделенной мощности ${lim} кВт — нужна разгрузка или увеличение мощности.`]);
+  else if(est>lim*0.85)warn.push(['warn',`Расчётная нагрузка ${est.toFixed(1)} кВт близка к выделенной ${lim} кВт — согласуйте с электриком.`]);
+  const big=real.filter(g=>g.a>=ain);
+  if(big.length)warn.push(['crit',`Номинал группы не меньше вводного автомата ${ain} А (${big.map(g=>g.code+' '+g.ch+g.a).join(', ')}) — при перегрузке отключится вся квартира. Нужна большая мощность ввода или другая техника.`]);
+  if(three){const ph={L1:0,L2:0,L3:0};real.forEach(g=>ph[g.ph]+=g.kw);const v=Object.values(ph),mx=Math.max(...v),mn=Math.min(...v),avg=(v[0]+v[1]+v[2])/3;
+    if(avg&&(mx-mn)/avg>0.3)warn.push(['warn',`Перекос фаз: L1 ${ph.L1.toFixed(1)}, L2 ${ph.L2.toFixed(1)}, L3 ${ph.L3.toFixed(1)} кВт — перераспределите группы.`]);}
+  if(mod>96*0.8)warn.push(['warn','Модулей больше, чем помещается в один щит на 96 модулей с запасом, — нужен второй щит или щит автоматизации.']);
+  if(!warn.length)warn.push(['ok','Номиналы, сечения и защита групп согласованы, мощности ввода хватает.']);
+  return {G,lim,three,ain,aqs,Iin,mod,box,inst,est,warn,L,SL};
 }
 function schemeSvg(S0,p){
   const {G,three,ain,aqs,L}=S0;
@@ -937,7 +962,7 @@ function renderScheme(){
   const p=curP();const R=schemeRooms(p);const S0=buildScheme(p);const {svg}=schemeSvg(S0,p);
   const real=S0.G.filter(g=>!g.res);
   const cntBy=(f)=>{const m={};real.filter(f).forEach(g=>{const k=`${g.ch}${g.a}`+(g.rcd?` ${g.rcd} мА`:'');m[k]=(m[k]||0)+1});return Object.entries(m).map(([k,v])=>`${v} × ${k}`).join(', ')||'—'};
-  const est=S0.inst*(S0.inst>14?0.45:S0.inst>8?0.55:0.65);
+  const est=S0.est;
   const num=(id,label,max)=>`<label class="rq"><span>${label}</span><input type="number" min="0" max="${max}" id="rm-${id}" data-rm="${id}" value="${R[id]}"></label>`;
   $('#main').innerHTML=`<div class="room-head"><h2>Однолинейная схема</h2><div class="lead"><p>Эскиз щита по вашему выбору: уровень «${LEVELS[S0.L-1].t}», умный дом — ${smartOn()?'«'+SMART_LV[smartLevel()-1].t+'»':'не нужен'}, приборы из вкладки «Нагрузка» и состав квартиры ниже. Подходит для обсуждения с клиентом и электриком; рабочий проект щита выполняет специалист с допуском.</p></div></div>
   <div class="panel" style="margin-top:0"><h4>Состав квартиры</h4><div class="rqs">${num('bed','Спален',4)}${num('kids','Детских',3)}${num('bath','Ванных',3)}${num('wc','Отдельных санузлов',3)}${num('office','Кабинет',1)}${num('balcony','Балкон / лоджия',2)}</div><p class="note">Приборы, отдельные линии и выделенная мощность берутся из вкладки <a href="#load">«Нагрузка»</a>.</p></div>
@@ -949,6 +974,7 @@ function renderScheme(){
    <div><span>Групп</span><b>${real.length} + ${S0.G.length-real.length} резерв</b></div>
    <div><span>Щит</span><b>от ${S0.box} модулей</b></div>
   </div>
+  <div class="olchk">${S0.warn.map(([t,m])=>`<p class="ck ${t}"><b>${t==='ok'?'Проверка пройдена':t==='crit'?'Ошибка':'Внимание'}</b> ${esc(m)}</p>`).join('')}</div>
   <div class="olswrap">${svg}</div>
   <div class="panel"><h4>Спецификация щита (предварительно)</h4><div class="tbl"><table><tbody>
    <tr><td>Вводной автомат QF0 (в этажном щите, по ТУ)</td><td class="n">${S0.three?'3P':'1P / 2P'} ${S0.ain} А</td></tr>
@@ -959,7 +985,7 @@ function renderScheme(){
    <tr><td>Дифавтоматы QFD</td><td class="n">${cntBy(g=>g.rcd)}</td></tr>
    <tr><td>Корпус щита</td><td class="n">${S0.box} модулей (занято ~${S0.mod}, запас 25%)</td></tr>
   </tbody></table></div>
-  <p class="note">Номиналы подобраны по расчётному току с запасом, сечения — для меди при скрытой прокладке. Коэффициенты, селективность, падение напряжения и ток КЗ проверяет электрик по ПУЭ и СП 256. Мощность больше 15 кВт приложение считает трёхфазным вводом и распределяет группы по фазам.</p></div>
+  <p class="note">Номиналы подобраны по расчётному току с запасом, сечения — для меди при скрытой прокладке. Коэффициенты, селективность, ток КЗ и падение напряжения (не больше 5% — для длинных линий больше 25–30 м сечение увеличивают) проверяет электрик по ПУЭ и СП 256. Мощность больше 15 кВт приложение считает трёхфазным вводом и распределяет группы по фазам.</p></div>
   <div class="tools"><button class="btn primary" id="svgBtn">Скачать схему SVG</button><button class="btn" id="olsCsv">Таблица групп в CSV</button><span class="msg" id="toolMsg"></span></div>`;
 }
 async function dlSave(filename,data){const m=$('#toolMsg');let dl=null;try{dl=window.claude&&await claude.use('downloads')}catch(e){}
